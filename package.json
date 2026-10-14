@@ -1,0 +1,21 @@
+{
+  "name": "libraries-against-loneliness-kiosk",
+  "version": "1.0.0",
+  "description": "Responsive Progressive Web App (PWA) kiosk interface for Libraries Against Loneliness with Supabase and TouchDesigner integration.",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "serve": "npx serve -l 8080 .",
+    "validate": "node -c scripts/*.js && python3 -m py_compile touchdesigner/touchdesigner_poll_script.py"
+  },
+  "keywords": [
+    "pwa",
+    "kiosk",
+    "touchdesigner",
+    "supabase",
+    "wellbeing",
+    "generative-art",
+    "rmit"
+  ],
+  "author": "RMIT Swanston Library Wellbeing Team",
+  "license": "MIT"
+}

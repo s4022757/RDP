@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="60%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#070B14" />
+    </radialGradient>
+    <radialGradient id="starGlowCyan" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="1" />
+      <stop offset="40%" stop-color="#38BDF8" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="starGlowAmber" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FBBF24" stop-opacity="1" />
+      <stop offset="40%" stop-color="#F59E0B" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#D97706" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="starGlowIndigo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#818CF8" stop-opacity="1" />
+      <stop offset="50%" stop-color="#6366F1" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#4F46E5" stop-opacity="0" />
+    </radialGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Subtle ambient aura -->
+  <circle cx="256" cy="240" r="160" fill="#6366F1" opacity="0.12" filter="url(#softGlow)" />
+  <circle cx="280" cy="260" r="130" fill="#2DD4BF" opacity="0.1" filter="url(#softGlow)" />
+
+  <!-- Constellation Connection Lines -->
+  <g stroke="rgba(255, 255, 255, 0.28)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 4">
+    <line x1="160" y1="180" x2="256" y2="130" />
+    <line x1="256" y1="130" x2="352" y2="190" />
+    <line x1="352" y1="190" x2="330" y2="310" />
+    <line x1="330" y1="310" x2="256" y2="370" />
+    <line x1="256" y1="370" x2="170" y2="300" />
+    <line x1="170" y1="300" x2="160" y2="180" />
+    <!-- Cross links -->
+    <line x1="160" y1="180" x2="330" y2="310" stroke="rgba(56, 189, 248, 0.22)" stroke-dasharray="none" stroke-width="1.5" />
+    <line x1="256" y1="130" x2="256" y2="370" stroke="rgba(251, 191, 36, 0.22)" stroke-dasharray="none" stroke-width="1.5" />
+    <line x1="352" y1="190" x2="170" y2="300" stroke="rgba(129, 140, 248, 0.22)" stroke-dasharray="none" stroke-width="1.5" />
+  </g>
+
+  <!-- Central Constellation Heart / Node -->
+  <circle cx="256" cy="240" r="60" fill="url(#starGlowAmber)" opacity="0.3" filter="url(#softGlow)" />
+  <circle cx="256" cy="240" r="18" fill="#FFFBEB" />
+  <circle cx="256" cy="240" r="10" fill="#F59E0B" />
+
+  <!-- Constellation Node Stars -->
+  <!-- Node 1: Top -->
+  <circle cx="256" cy="130" r="38" fill="url(#starGlowCyan)" />
+  <circle cx="256" cy="130" r="12" fill="#E0F2FE" />
+  <circle cx="256" cy="130" r="6" fill="#0284C7" />
+
+  <!-- Node 2: Top Right -->
+  <circle cx="352" cy="190" r="32" fill="url(#starGlowIndigo)" />
+  <circle cx="352" cy="190" r="10" fill="#EEF2FF" />
+  <circle cx="352" cy="190" r="5" fill="#4F46E5" />
+
+  <!-- Node 3: Bottom Right -->
+  <circle cx="330" cy="310" r="34" fill="url(#starGlowAmber)" />
+  <circle cx="330" cy="310" r="11" fill="#FEF3C7" />
+  <circle cx="330" cy="310" r="6" fill="#D97706" />
+
+  <!-- Node 4: Bottom Center -->
+  <circle cx="256" cy="370" r="36" fill="url(#starGlowCyan)" />
+  <circle cx="256" cy="370" r="12" fill="#E0F2FE" />
+  <circle cx="256" cy="370" r="6" fill="#0D9488" />
+
+  <!-- Node 5: Bottom Left -->
+  <circle cx="170" cy="300" r="30" fill="url(#starGlowIndigo)" />
+  <circle cx="170" cy="300" r="9" fill="#EEF2FF" />
+  <circle cx="170" cy="300" r="5" fill="#6366F1" />
+
+  <!-- Node 6: Top Left -->
+  <circle cx="160" cy="180" r="34" fill="url(#starGlowAmber)" />
+  <circle cx="160" cy="180" r="11" fill="#FEF3C7" />
+  <circle cx="160" cy="180" r="6" fill="#F59E0B" />
+
+  <!-- Decorative Sparkles -->
+  <polygon points="256,92 258,102 268,104 258,106 256,116 254,106 244,104 254,102" fill="#FFFFFF" opacity="0.9" />
+  <polygon points="380,240 381,246 387,247 381,248 380,254 379,248 373,247 379,246" fill="#38BDF8" opacity="0.8" />
+  <polygon points="130,240 131,246 137,247 131,248 130,254 129,248 123,247 129,246" fill="#FBBF24" opacity="0.8" />
+  <polygon points="210,395 211,400 216,401 211,402 210,407 209,402 204,401 209,400" fill="#A5B4FC" opacity="0.8" />
+  <polygon points="300,395 301,400 306,401 301,402 300,407 299,402 294,401 299,400" fill="#5EEAD4" opacity="0.8" />
+
+  <!-- Subtle Emblem Ring -->
+  <circle cx="256" cy="240" r="190" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1.5" fill="none" />
+</svg>

@@ -1,0 +1,839 @@
+/**
+ * Libraries Against Loneliness • Reflect & Connect
+ * Component Styling: Scale Sliders, 1-10 Touch Pills, Prompt Cards,
+ * Dual Input Modes (Text & Audio Waveform), Star Visualizer, & TouchDesigner Bridge
+ */
+
+/* ==========================================================================
+   1. WELCOME SCREEN COMPONENTS
+   ========================================================================== */
+.welcome-hero {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcome-emblem {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-emblem-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(56, 189, 248, 0.4);
+  animation: rotateRing 40s linear infinite;
+}
+
+.welcome-emblem-pulse {
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+  animation: emblemPulse 4s ease-in-out infinite;
+}
+
+.welcome-emblem-icon {
+  width: 72px;
+  height: 72px;
+  z-index: 2;
+  filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.45));
+}
+
+@keyframes rotateRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes emblemPulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+
+.welcome-features {
+  display: flex;
+  gap: 1.25rem;
+  margin: 2rem 0 2.5rem 0;
+  width: 100%;
+}
+
+.feature-pill {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.feature-icon {
+  font-size: 1.35rem;
+}
+
+.feature-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* ==========================================================================
+   2. SCALE QUESTIONS (1-10 SLIDERS & PILLS)
+   ========================================================================== */
+.scales-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.scale-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 1.85rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.scale-card:focus-within, .scale-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+}
+
+.scale-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  gap: 1rem;
+}
+
+.scale-meta {
+  flex: 1;
+}
+
+.scale-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.4rem;
+}
+
+.scale-badge-indigo {
+  background: rgba(99, 102, 241, 0.15);
+  color: #A5B4FC;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.scale-badge-amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FCD34D;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.scale-badge-teal {
+  background: rgba(45, 212, 191, 0.15);
+  color: #5EEAD4;
+  border: 1px solid rgba(45, 212, 191, 0.3);
+}
+
+.scale-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.scale-question {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* Numeric Value Counter Display */
+.scale-value-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  height: 54px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 0.2rem;
+}
+
+.scale-val-number {
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.scale-val-max {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+/* Custom Range Input (Slider) */
+.scale-slider-wrapper {
+  margin: 1.25rem 0 1rem 0;
+  position: relative;
+}
+
+.kiosk-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-full);
+  outline: none;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Slider Thumb Styling */
+.kiosk-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  border: 2px solid #0F172A;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kiosk-slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  border: 2px solid #0F172A;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kiosk-slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 0 22px rgba(56, 189, 248, 1), 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Spectrum Endpoints Labels */
+.scale-spectrum-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.85rem;
+}
+
+.label-min {
+  text-align: left;
+}
+
+.label-max {
+  text-align: right;
+}
+
+/* 1-10 Clickable Touch Pills (for Kiosk Touchscreens) */
+.scale-pills-row {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.scale-pill {
+  flex: 1;
+  min-height: 42px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.scale-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.scale-pill.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.45) 0%, rgba(56, 189, 248, 0.45) 100%);
+  color: #FFFFFF;
+  border-color: rgba(56, 189, 248, 0.7);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+  font-weight: 700;
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   3. OPEN-ENDED PROMPT CARD & DUAL INPUT MODES
+   ========================================================================== */
+.prompt-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.85rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.prompt-pulse {
+  animation: promptPulseAnim 0.4s ease-out;
+}
+
+@keyframes promptPulseAnim {
+  0% { transform: scale(0.98); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.prompt-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.prompt-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-amber);
+  background: rgba(251, 191, 36, 0.12);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.btn-cycle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cycle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.prompt-question-text {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+/* Dual Input Mode Tabs */
+.input-mode-tabs {
+  display: flex;
+  gap: 0.6rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.4rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tab-mode {
+  flex: 1;
+  min-height: 46px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-mode.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Mode Panel: Text Area */
+.text-input-wrapper {
+  position: relative;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.text-input-wrapper:focus-within {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.reflection-textarea {
+  width: 100%;
+  min-height: 130px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  resize: none;
+}
+
+.reflection-textarea::placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.text-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.char-counter {
+  font-weight: 600;
+  font-feature-settings: 'tnum';
+}
+
+.char-limit-near {
+  color: var(--accent-coral);
+}
+
+/* Mode Panel: Voice Recording (MediaRecorder API) */
+.audio-recorder-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.visualizer-canvas-wrapper {
+  width: 100%;
+  max-width: 480px;
+  height: 70px;
+  margin-bottom: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#audio-visualizer-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.audio-timer-display {
+  font-family: var(--font-heading);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+  font-feature-settings: 'tnum';
+}
+
+.timer-warning {
+  color: var(--accent-coral);
+  animation: timerPulse 0.5s infinite alternate;
+}
+
+@keyframes timerPulse {
+  from { opacity: 0.7; }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+/* Big Mic Record Button */
+.btn-record-mic {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EF4444 0%, #F97316 100%);
+  border: none;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  transition: all 0.25s ease;
+}
+
+.btn-record-mic:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+}
+
+.btn-record-stop {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #DC2626;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: pulseRecording 1.4s infinite;
+}
+
+@keyframes pulseRecording {
+  0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.6); }
+  50% { box-shadow: 0 0 35px rgba(220, 38, 38, 0.9); }
+}
+
+.recording-indicator-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #F87171;
+  font-weight: 600;
+  margin-top: 0.85rem;
+}
+
+.rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #EF4444;
+  animation: recBlink 1s infinite;
+}
+
+@keyframes recBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Playback container */
+.audio-playback-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.audio-playback-player {
+  width: 100%;
+  max-width: 420px;
+  outline: none;
+}
+
+.audio-duration-badge {
+  font-size: 0.85rem;
+  color: var(--accent-teal);
+  font-weight: 600;
+}
+
+.audio-error-alert {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-sm);
+  color: #FCA5A5;
+  font-size: 0.85rem;
+}
+
+/* Navigation button rows */
+.nav-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* ==========================================================================
+   4. SUCCESS SCREEN & GENERATIVE STAR VIEW
+   ========================================================================== */
+.success-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 2rem;
+}
+
+.star-preview-chamber {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.star-preview-aura {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: starPulse infinite ease-in-out;
+}
+
+@keyframes starPulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.25); opacity: 0.95; }
+}
+
+.star-preview-core {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 0 25px 8px rgba(255, 255, 255, 0.8);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+}
+
+/* TouchDesigner Live Visual Parameters Card */
+.td-parameters-card {
+  width: 100%;
+  max-width: 580px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.td-parameters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.5rem;
+}
+
+.td-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+}
+
+.td-param-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+.td-param-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.td-param-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.td-param-value {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.success-countdown-pill {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 1.25rem;
+}
+
+.badge-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+}
+
+.badge-dot.live {
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+}
+
+.badge-dot.local {
+  background: #F59E0B;
+  box-shadow: 0 0 8px #F59E0B;
+}
+
+/* ==========================================================================
+   5. OPERATOR & TOUCHDESIGNER DRAWER MODAL
+   ========================================================================== */
+.dev-field {
+  margin-bottom: 1.25rem;
+}
+
+.dev-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.dev-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.dev-input:focus {
+  border-color: var(--accent-cyan);
+}
+
+.dev-code-box {
+  background: #070B14;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #38BDF8;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.status-alert {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+
+.status-alert.success {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #6EE7B7;
+}
+
+.status-alert.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #FCA5A5;
+}
+
+.status-alert.info {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #7DD3FC;
+}
+
+/* ==========================================================================
+   6. RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 640px) {
+  .scale-card {
+    padding: 1.25rem 1rem;
+  }
+  .scale-pills-row {
+    gap: 0.25rem;
+  }
+  .scale-pill {
+    min-height: 38px;
+    font-size: 0.85rem;
+  }
+  .prompt-question-text {
+    font-size: 1.2rem;
+  }
+  .welcome-features {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .td-param-grid {
+    grid-template-columns: 1fr;
+  }
+}

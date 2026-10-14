@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070B14">
+  <meta name="description" content="Libraries Against Loneliness - Interactive RMIT Swanston Library installation kiosk connecting student wellbeing with generative TouchDesigner constellation visuals.">
+  
+  <title>Libraries Against Loneliness • Reflect &amp; Connect</title>
+
+  <!-- PWA Manifest & App Icons -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="./styles/main.css">
+  <link rel="stylesheet" href="./styles/components.css">
+
+  <!-- Supabase JS Client (v2 CDN with graceful offline fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Background Interactive Constellation Canvas -->
+  <canvas id="constellation-bg" aria-hidden="true"></canvas>
+  <div class="ambient-glow-overlay" aria-hidden="true"></div>
+
+  <!-- Main Kiosk App Viewport -->
+  <main id="app-viewport">
+    
+    <!-- Top Header / Kiosk Navigation Bar -->
+    <header class="kiosk-header" role="banner">
+      <div class="brand-wrapper">
+        <a href="#welcome" class="brand-icon-link" aria-label="Libraries Against Loneliness home">
+          <img src="./icons/icon.svg" alt="Constellation Logo" class="brand-icon" width="36" height="36">
+        </a>
+        <div class="brand-text">
+          <h1>Libraries Against Loneliness</h1>
+          <p class="brand-tagline">RMIT Swanston Library • Level 6 Wellbeing Kiosk</p>
+        </div>
+      </div>
+
+      <nav class="kiosk-actions" aria-label="Kiosk accessibility controls">
+        <!-- Audio Mute/Unmute -->
+        <button id="btn-toggle-sound" class="icon-button" type="button" aria-label="Toggle ambient chimes" title="Toggle Sound">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+        </button>
+        <!-- Fullscreen Kiosk Mode -->
+        <button id="btn-fullscreen" class="icon-button" type="button" aria-label="Toggle fullscreen kiosk view" title="Fullscreen">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        </button>
+        <!-- TouchDesigner Bridge / Setup Drawer -->
+        <button id="btn-open-dev-modal" class="icon-button" type="button" aria-label="Open TouchDesigner & Supabase settings" title="TouchDesigner Bridge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <!-- SCREEN 1: ATTRACT / WELCOME -->
+    <section id="screen-welcome" class="kiosk-screen fade-in" aria-labelledby="welcome-heading">
+      <div class="welcome-hero">
+        <div class="welcome-emblem">
+          <div class="welcome-emblem-ring"></div>
+          <div class="welcome-emblem-pulse"></div>
+          <img src="./icons/icon.svg" alt="Glow Starlight" class="welcome-emblem-icon">
+        </div>
+
+        <h2 id="welcome-heading" class="screen-title">Take a quiet breath.</h2>
+        <p class="screen-subtitle">
+          Pause for just sixty seconds. Share where you are at today and light up an anonymous star in the collective Swanston Library constellation projection.
+        </p>
+
+        <div class="welcome-features">
+          <div class="feature-pill">
+            <span class="feature-icon" aria-hidden="true">💫</span>
+            <span class="feature-text"><strong>3 Quick Scales</strong><br>Reflect on your energy &amp; connection</span>
+          </div>
+          <div class="feature-pill">
+            <span class="feature-icon" aria-hidden="true">🕊️</span>
+            <span class="feature-text"><strong>1 Reflection</strong><br>Text (300 chars) or 30s Voice</span>
+          </div>
+          <div class="feature-pill">
+            <span class="feature-icon" aria-hidden="true">✨</span>
+            <span class="feature-text"><strong>Your Own Star</strong><br>Feeds the live TouchDesigner installation</span>
+          </div>
+        </div>
+
+        <button id="btn-begin-reflection" class="btn btn-primary btn-large btn-pulse" type="button" id="btn-start">
+          <span>Begin Check-In</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: THREE REFLECTION SCALES (1-10) -->
+    <section id="screen-scales" class="kiosk-screen hidden" aria-labelledby="scales-heading">
+      <div class="screen-header-block">
+        <span class="scale-badge scale-badge-indigo">Step 1 of 2 • Sensory Scales</span>
+        <h2 id="scales-heading" class="screen-title">How is your space feeling right now?</h2>
+        <p class="screen-subtitle">Select any rating from 1 to 10 by sliding or tapping the number directly.</p>
+      </div>
+
+      <div class="scales-container">
+        <!-- Scale 1: Environmental Connectedness -->
+        <article class="scale-card" id="card-scale-connectedness">
+          <div class="scale-header">
+            <div class="scale-meta">
+              <span class="scale-badge scale-badge-indigo">1 • Environmental Connectedness</span>
+              <h3 class="scale-title">Connection to the Space</h3>
+              <p class="scale-question">Right now, how connected do you feel to the energy and people around you in this space?</p>
+            </div>
+            <div class="scale-value-display">
+              <span id="val-connectedness" class="scale-val-number">5</span>
+              <span class="scale-val-max">/ 10</span>
+            </div>
+          </div>
+
+          <div class="scale-slider-wrapper">
+            <input 
+              type="range" 
+              id="slider-connectedness" 
+              class="kiosk-slider" 
+              min="1" 
+              max="10" 
+              step="1" 
+              value="5" 
+              aria-label="Environmental connectedness from 1 to 10"
+            >
+          </div>
+
+          <div class="scale-spectrum-labels">
+            <span class="label-min">1 • In my own bubble</span>
+            <span class="label-mid">Quietly aware</span>
+            <span class="label-max">10 • Warmly connected</span>
+          </div>
+
+          <!-- 1-10 Accessible Touch Pills -->
+          <div class="scale-pills-row" id="pills-connectedness" role="group" aria-label="Rating 1 to 10 pills for Environmental Connectedness"></div>
+        </article>
+
+        <!-- Scale 2: Social Energy / Battery -->
+        <article class="scale-card" id="card-scale-social-energy">
+          <div class="scale-header">
+            <div class="scale-meta">
+              <span class="scale-badge scale-badge-amber">2 • Social Battery</span>
+              <h3 class="scale-title">Social Energy Today</h3>
+              <p class="scale-question">How would you describe your social energy today—are you leaning toward quiet focus or an open door to others?</p>
+            </div>
+            <div class="scale-value-display">
+              <span id="val-social-energy" class="scale-val-number">5</span>
+              <span class="scale-val-max">/ 10</span>
+            </div>
+          </div>
+
+          <div class="scale-slider-wrapper">
+            <input 
+              type="range" 
+              id="slider-social-energy" 
+              class="kiosk-slider" 
+              min="1" 
+              max="10" 
+              step="1" 
+              value="5" 
+              aria-label="Social energy from 1 to 10"
+            >
+          </div>
+
+          <div class="scale-spectrum-labels">
+            <span class="label-min">1 • Deep quiet focus</span>
+            <span class="label-mid">Gentle balance</span>
+            <span class="label-max">10 • Open door to others</span>
+          </div>
+
+          <!-- 1-10 Accessible Touch Pills -->
+          <div class="scale-pills-row" id="pills-social-energy" role="group" aria-label="Rating 1 to 10 pills for Social Energy"></div>
+        </article>
+
+        <!-- Scale 3: Collective Empathy -->
+        <article class="scale-card" id="card-scale-collective-empathy">
+          <div class="scale-header">
+            <div class="scale-meta">
+              <span class="scale-badge scale-badge-teal">3 • Collective Empathy</span>
+              <h3 class="scale-title">Shared Pressures &amp; Empathy</h3>
+              <p class="scale-question">How much do you feel that others around you might be sharing similar thoughts or study pressures right now?</p>
+            </div>
+            <div class="scale-value-display">
+              <span id="val-collective-empathy" class="scale-val-number">6</span>
+              <span class="scale-val-max">/ 10</span>
+            </div>
+          </div>
+
+          <div class="scale-slider-wrapper">
+            <input 
+              type="range" 
+              id="slider-collective-empathy" 
+              class="kiosk-slider" 
+              min="1" 
+              max="10" 
+              step="1" 
+              value="6" 
+              aria-label="Collective empathy from 1 to 10"
+            >
+          </div>
+
+          <div class="scale-spectrum-labels">
+            <span class="label-min">1 • Carrying it alone</span>
+            <span class="label-mid">Sense of overlap</span>
+            <span class="label-max">10 • Shared journey together</span>
+          </div>
+
+          <!-- 1-10 Accessible Touch Pills -->
+          <div class="scale-pills-row" id="pills-collective-empathy" role="group" aria-label="Rating 1 to 10 pills for Collective Empathy"></div>
+        </article>
+      </div>
+
+      <div class="nav-actions-row">
+        <span></span>
+        <button id="btn-to-open-ended" class="btn btn-primary" type="button">
+          <span>Continue to Open Reflection</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: OPEN-ENDED RESPONSE (ROTATING PROMPT BANK & DUAL INPUT) -->
+    <section id="screen-open-ended" class="kiosk-screen hidden" aria-labelledby="prompt-heading">
+      <div class="screen-header-block">
+        <span class="scale-badge scale-badge-amber">Step 2 of 2 • Open Reflection</span>
+        <h2 id="prompt-heading" class="screen-title">Leave a thought for the room</h2>
+        <p class="screen-subtitle">Your words attach to your star in the TouchDesigner constellation. Choose text or voice.</p>
+      </div>
+
+      <!-- Rotating Single Prompt Card -->
+      <div class="prompt-card" id="prompt-card">
+        <div class="prompt-card-header">
+          <span id="prompt-tag" class="prompt-tag">💬 Words of Warmth</span>
+          <button id="btn-cycle-prompt" class="btn-cycle" type="button" aria-label="Cycle another prompt question">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span>Cycle prompt</span>
+          </button>
+        </div>
+        <p id="prompt-question" class="prompt-question-text">
+          If you could share a single word of encouragement with someone else walking through this space today, what would it be?
+        </p>
+      </div>
+
+      <!-- Dual Input Mode Selector Tabs -->
+      <div class="input-mode-tabs" role="tablist" aria-label="Input mode selector">
+        <button id="tab-mode-text" class="tab-mode active" role="tab" aria-selected="true" aria-controls="panel-mode-text" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          <span>Write Reflection</span>
+        </button>
+        <button id="tab-mode-audio" class="tab-mode" role="tab" aria-selected="false" aria-controls="panel-mode-audio" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+          </svg>
+          <span>Voice Record (30s)</span>
+        </button>
+      </div>
+
+      <!-- PANEL A: TEXT INPUT (STRICTLY CAPPED AT 300 CHARACTERS) -->
+      <div id="panel-mode-text" class="input-panel" role="tabpanel" aria-labelledby="tab-mode-text">
+        <div class="text-input-wrapper">
+          <textarea 
+            id="reflection-text-input" 
+            class="reflection-textarea" 
+            maxlength="300" 
+            placeholder="Type your word of encouragement or quiet thought here (anonymous &amp; safe)..."
+            aria-label="Reflection text input capped at 300 characters"
+          ></textarea>
+          <div class="text-meta-row">
+            <span>Non-identifiable &amp; shared anonymously</span>
+            <span id="text-char-counter" class="char-counter">0 / 300</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL B: AUDIO RECORDING (STRICTLY CAPPED AT 30 SECONDS VIA MEDIARECORDER) -->
+      <div id="panel-mode-audio" class="input-panel hidden" role="tabpanel" aria-labelledby="tab-mode-audio">
+        <div class="audio-recorder-panel">
+          <!-- Real-time Live Audio Waveform Canvas -->
+          <div class="visualizer-canvas-wrapper">
+            <canvas id="audio-visualizer-canvas" width="480" height="70" aria-label="Live audio waveform visualizer"></canvas>
+          </div>
+
+          <!-- Countdown Timer strictly capped at 30s -->
+          <div id="audio-timer-display" class="audio-timer-display">00:00 / 00:30</div>
+
+          <!-- Big Tactile Record Button -->
+          <button id="btn-start-record" class="btn-record-mic" type="button" aria-label="Start recording audio (maximum 30 seconds)">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+            </svg>
+          </button>
+
+          <!-- Stop Recording Button (Active while recording) -->
+          <button id="btn-stop-record" class="btn-record-stop hidden" type="button" aria-label="Stop audio recording">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="5" y="5" width="14" height="14" rx="2" />
+            </svg>
+          </button>
+
+          <!-- Active Recording Status -->
+          <div id="audio-recording-state" class="recording-indicator-pulse hidden">
+            <span class="rec-dot"></span>
+            <span>Recording voice... Auto-stops at 30 seconds</span>
+          </div>
+
+          <!-- Playback Preview Container (Active after recording) -->
+          <div id="audio-playback-container" class="audio-playback-container hidden">
+            <span id="audio-recorded-duration" class="audio-duration-badge">0.0s recorded</span>
+            <audio id="audio-playback-player" class="audio-playback-player" controls preload="metadata"></audio>
+            <button id="btn-rerecord" class="btn btn-secondary" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+              </svg>
+              <span>Re-record Voice</span>
+            </button>
+          </div>
+
+          <!-- Microphone Error Notification -->
+          <div id="audio-error-message" class="audio-error-alert hidden" role="alert"></div>
+        </div>
+      </div>
+
+      <!-- Navigation Row -->
+      <div class="nav-actions-row">
+        <button id="btn-back-to-scales" class="btn btn-secondary" type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Scales</span>
+        </button>
+
+        <button id="btn-submit-reflection" class="btn btn-primary btn-large btn-pulse" type="button">
+          <span>Light My Star in the Constellation ✨</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: GENERATIVE STAR CREATED / CONFIRMATION -->
+    <section id="screen-success" class="kiosk-screen hidden" aria-labelledby="success-heading">
+      <div class="success-card glass-panel">
+        
+        <!-- Live Generated Star Visual -->
+        <div class="star-preview-chamber">
+          <div id="success-star-aura" class="star-preview-aura"></div>
+          <div id="success-star-visual" class="star-preview-core"></div>
+        </div>
+
+        <h2 id="success-heading" class="screen-title">Your star has lit up in the library.</h2>
+        <p class="screen-subtitle">
+          Thank you for sharing this quiet moment. Your reflection is now weaving into the Swanston Library constellation projection beside this booth.
+        </p>
+
+        <!-- TouchDesigner Flat Parameter Values Breakdown -->
+        <div class="td-parameters-card">
+          <div class="td-parameters-header">
+            <span class="td-badge">TouchDesigner Generative Mapping</span>
+            <span id="success-sync-status"><span class="badge-dot live"></span> Synced</span>
+          </div>
+          <div class="td-param-grid">
+            <div class="td-param-item">
+              <span class="td-param-label">Star Luminosity (Empathy)</span>
+              <span id="param-star-brightness" class="td-param-value">75%</span>
+            </div>
+            <div class="td-param-item">
+              <span class="td-param-label">Color Hue (Social Energy)</span>
+              <span id="param-star-hue" class="td-param-value">Hue 190°</span>
+            </div>
+            <div class="td-param-item">
+              <span class="td-param-label">Line Thickness (Connectedness)</span>
+              <span id="param-line-thickness" class="td-param-value">3.2 px</span>
+            </div>
+            <div class="td-param-item">
+              <span class="td-param-label">Pulse Rate</span>
+              <span id="param-pulse-rate" class="td-param-value">1.10 Hz</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="success-actions">
+          <button id="btn-reset-done" class="btn btn-primary" type="button">
+            <span>Done / Return Home</span>
+          </button>
+        </div>
+
+        <p class="success-countdown-pill">
+          Kiosk will reset automatically in <strong id="success-autoreset-timer">15</strong>s for the next student.
+        </p>
+      </div>
+    </section>
+
+    <!-- Kiosk Footer Note -->
+    <footer class="kiosk-footer" role="contentinfo">
+      <div class="privacy-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>100% Anonymous &bull; No login required &bull; Swanston Library Level 6 Installation</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL 1: IDLE TIMEOUT WARNING (FOR PUBLIC LIBRARY KIOSK PRIVACY)
+       ========================================================================= -->
+  <aside id="idle-modal" class="modal-overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="idle-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="idle-title" class="modal-title">Still with us?</h3>
+      </div>
+      <p class="screen-subtitle" style="margin-bottom: 1.5rem;">
+        To protect your privacy in the library, this kiosk will gently reset in <strong id="idle-countdown-seconds" style="color: var(--accent-amber); font-size: 1.3rem;">15</strong> seconds if untouched.
+      </p>
+      <div class="nav-actions-row">
+        <button id="btn-reset-now" class="btn btn-secondary" type="button">Reset Now</button>
+        <button id="btn-stay-active" class="btn btn-primary" type="button">I'm Still Here</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       MODAL 2: TOUCHDESIGNER BRIDGE & OPERATOR SETTINGS
+       ========================================================================= -->
+  <aside id="dev-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="dev-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="dev-modal-title" class="modal-title">TouchDesigner &amp; Supabase Bridge</h3>
+        <button id="btn-close-dev-modal" class="modal-close-btn" type="button" aria-label="Close settings">&times;</button>
+      </div>
+
+      <!-- Supabase Configuration -->
+      <div class="dev-field">
+        <label for="cfg-supabase-url" class="dev-label">Supabase Project URL</label>
+        <input type="text" id="cfg-supabase-url" class="dev-input" placeholder="https://xyzcompany.supabase.co">
+      </div>
+      <div class="dev-field">
+        <label for="cfg-supabase-key" class="dev-label">Supabase Anon Key</label>
+        <input type="password" id="cfg-supabase-key" class="dev-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem;">
+        <button id="btn-save-supabase" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">Save Settings</button>
+        <button id="btn-test-supabase" class="btn btn-primary" style="font-size: 0.85rem;" type="button">Test Connection</button>
+      </div>
+      <div id="supabase-status-alert" class="status-alert info hidden"></div>
+
+      <!-- Offline Queue Indicator -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin: 1.25rem 0 0.5rem 0; font-size: 0.85rem;">
+        <span>Offline Local Queue: <strong id="local-queue-count">0</strong> records</span>
+        <button id="btn-flush-queue" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.3rem 0.75rem;" type="button">Sync Queue Now</button>
+      </div>
+
+      <!-- Flat JSON Output for TouchDesigner Web Client DAT -->
+      <div class="dev-field" style="margin-top: 1.25rem;">
+        <label class="dev-label">Flat TouchDesigner JSON Record Preview</label>
+        <pre id="td-json-preview" class="dev-code-box">{}</pre>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button id="btn-copy-json" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">Copy Flat JSON</button>
+        <button id="btn-copy-python" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">Copy TouchDesigner Python Script</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Application Logic Scripts -->
+  <script src="./scripts/config.js"></script>
+  <script src="./scripts/sound-effects.js"></script>
+  <script src="./scripts/audio-recorder.js"></script>
+  <script src="./scripts/touchdesigner-bridge.js"></script>
+  <script src="./scripts/supabase-client.js"></script>
+  <script src="./scripts/app.js"></script>
+</body>
+</html>
