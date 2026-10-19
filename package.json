@@ -4,8 +4,9 @@
   "description": "Responsive Progressive Web App (PWA) kiosk interface for Libraries Against Loneliness with Supabase and TouchDesigner integration.",
   "scripts": {
     "start": "python3 -m http.server 8080",
+    "start:bridge": "python3 touchdesigner/local_bridge_server.py",
     "serve": "npx serve -l 8080 .",
-    "validate": "node -c scripts/*.js && python3 -m py_compile touchdesigner/touchdesigner_poll_script.py"
+    "validate": "node -c scripts/*.js && python3 -m py_compile touchdesigner/touchdesigner_poll_script.py touchdesigner/local_bridge_server.py"
   },
   "keywords": [
     "pwa",

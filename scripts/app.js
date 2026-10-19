@@ -148,6 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopyPython = document.getElementById('btn-copy-python');
   const localQueueCountBadge = document.getElementById('local-queue-count');
   const btnFlushQueue = document.getElementById('btn-flush-queue');
+  const btnPickLocalDir = document.getElementById('btn-pick-local-dir');
+  const btnDownloadLatestJson = document.getElementById('btn-download-latest-json');
+  const btnExportAllJson = document.getElementById('btn-export-all-json');
+  const chkAutoDownloadJson = document.getElementById('chk-auto-download-json');
+  const localDirStatus = document.getElementById('local-dir-status');
 
   // --- INITIALIZE AUDIO RECORDER ---
   const audioRecorder = new KioskAudioRecorder({
@@ -483,6 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Send to Supabase (with offline queue fallback)
     const result = await window.supabaseHandler.submitRecord(payload);
 
+    // Also output to local directory for TouchDesigner offline playback
+    if (window.localOutputHandler) {
+      window.localOutputHandler.handleRecordOutput(payload);
+    }
+
     // Play celestial starlight chord
     if (window.soundEngine) window.soundEngine.playStarFormation();
 
@@ -729,6 +739,57 @@ document.addEventListener('DOMContentLoaded', () => {
     updateQueueCountDisplay();
     alert(`Flushed ${res.flushed} items. ${res.remaining} remaining in offline queue.`);
   });
+
+  // Local Directory Output Listeners for TouchDesigner
+  if (btnPickLocalDir) {
+    btnPickLocalDir.addEventListener('click', async () => {
+      btnPickLocalDir.disabled = true;
+      const res = await window.localOutputHandler.pickOutputDirectory();
+      btnPickLocalDir.disabled = false;
+      if (localDirStatus) {
+        localDirStatus.classList.remove('hidden');
+        if (res.success) {
+          localDirStatus.className = 'status-alert success';
+          localDirStatus.textContent = `✓ Connected to folder: "${res.folderName}". Reflections will auto-save here!`;
+        } else {
+          localDirStatus.className = 'status-alert info';
+          localDirStatus.textContent = res.message || 'Folder selection was not completed.';
+        }
+      }
+    });
+  }
+
+  if (btnDownloadLatestJson) {
+    btnDownloadLatestJson.addEventListener('click', () => {
+      const currentPrompt = KIOSK_CONFIG.prompts[state.activePromptIndex];
+      const currentRecord = state.lastSubmittedRecord || TouchDesignerBridge.formatRecord({
+        feeling: state.feeling,
+        intensity: state.intensity,
+        openness: state.openness,
+        mindBusyness: state.mindBusyness,
+        consentGiven: true,
+        promptId: currentPrompt.id,
+        promptQuestion: currentPrompt.text,
+        responseType: state.inputMode,
+        responseText: state.responseText || 'Preview reflection text...',
+        audioDurationSec: state.audioData ? state.audioData.duration : 0
+      });
+      window.localOutputHandler.downloadSingleRecord(currentRecord);
+    });
+  }
+
+  if (btnExportAllJson) {
+    btnExportAllJson.addEventListener('click', () => {
+      window.localOutputHandler.downloadAllRecords();
+    });
+  }
+
+  if (chkAutoDownloadJson) {
+    chkAutoDownloadJson.checked = window.localOutputHandler.autoDownloadEnabled;
+    chkAutoDownloadJson.addEventListener('change', (e) => {
+      window.localOutputHandler.setAutoDownload(e.target.checked);
+    });
+  }
 
   function updateQueueCountDisplay() {
     if (localQueueCountBadge) {

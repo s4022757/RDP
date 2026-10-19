@@ -724,6 +724,35 @@
         <button id="btn-copy-json" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">Copy Flat JSON</button>
         <button id="btn-copy-python" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">Copy TouchDesigner Python Script</button>
       </div>
+
+      <!-- Local Directory Output for TouchDesigner (Offline Prototype Playback) -->
+      <div class="dev-field" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(236, 248, 192, 0.15);">
+        <label class="dev-label">📁 Local JSON Output Directory (TouchDesigner Prototype Playback)</label>
+        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.65rem; line-height: 1.4;">
+          Outputs individual <code>reflection_*.json</code>, <code>latest_reflection.json</code>, and <code>all_reflections.json</code> to disk so TouchDesigner can run completely offline.
+        </p>
+
+        <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.6rem;">
+          <button id="btn-pick-local-dir" class="btn btn-primary" style="font-size: 0.82rem; padding: 0.45rem 1rem;" type="button">
+            📁 Select Output Folder
+          </button>
+          <button id="btn-download-latest-json" class="btn btn-secondary" style="font-size: 0.82rem; padding: 0.45rem 1rem;" type="button">
+            ⬇ Download Latest JSON
+          </button>
+          <button id="btn-export-all-json" class="btn btn-secondary" style="font-size: 0.82rem; padding: 0.45rem 1rem;" type="button">
+            📦 Export All Records (.json)
+          </button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+          <input type="checkbox" id="chk-auto-download-json" style="accent-color: var(--accent-lime); width: 16px; height: 16px; cursor: pointer;">
+          <label for="chk-auto-download-json" style="font-size: 0.8rem; color: var(--text-primary); cursor: pointer;">
+            Auto-save each reflection JSON file to Downloads folder
+          </label>
+        </div>
+
+        <div id="local-dir-status" class="status-alert info hidden" style="margin-top: 0.65rem;"></div>
+      </div>
     </div>
   </aside>
 
@@ -732,6 +761,7 @@
   <script src="./scripts/sound-effects.js"></script>
   <script src="./scripts/audio-recorder.js"></script>
   <script src="./scripts/touchdesigner-bridge.js"></script>
+  <script src="./scripts/local-output-handler.js"></script>
   <script src="./scripts/supabase-client.js"></script>
   <script src="./scripts/app.js"></script>
 </body>

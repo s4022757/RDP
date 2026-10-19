@@ -1,35 +1,94 @@
 """
-TouchDesigner Python Integration Script
-Project: Libraries Against Loneliness • Reflect & Connect
+TouchDesigner Python Integration Script: Dual-Mode (Local Directory & Supabase)
+Project: CONSTELLATE • Libraries Against Loneliness
 Site: RMIT Swanston Library Level 6 Wellbeing Installation
-Updated for "To change.md" guidelines:
-- Emotion / Feeling (Word + Icon, Not Color Alone)
-- Q2: Star Intensity (1-5) -> Brightness
-- Q3: Openness (1-5) -> Scale & Line Thickness
-- Q4: Mind Busyness (1-5) -> Rotation Speed & Orientation
-- Optional Response / Skip support
+
+Allows instantaneous switching between:
+1. "LOCAL": Reads flat JSON files from the local 'records/' directory (offline prototype playback).
+2. "SUPABASE": Polls the live Supabase cloud database via REST (server-side interaction).
 """
 
-import urllib.request
+import os
+import glob
 import json
 import time
+import urllib.request
 
-# --- CONFIGURATION ---
-SUPABASE_URL = "https://viwuibpyqwlpztencstv.supabase.co" # Configured Supabase project
+# ==============================================================================
+# PLAYBACK MODE CONFIGURATION
+# Set to "LOCAL" for local directory playback or "SUPABASE" for live cloud sync.
+# ==============================================================================
+MODE = "LOCAL"  # Options: "LOCAL" or "SUPABASE"
+
+# --- LOCAL DIRECTORY SETTINGS ---
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+LOCAL_RECORDS_DIR = os.path.join(SCRIPT_DIR, "records")
+LOCAL_ALL_FILE = os.path.join(LOCAL_RECORDS_DIR, "all_reflections.json")
+LOCAL_LATEST_FILE = os.path.join(LOCAL_RECORDS_DIR, "latest_reflection.json")
+
+# --- SUPABASE SERVER SETTINGS ---
+SUPABASE_URL = "https://viwuibpyqwlpztencstv.supabase.co"
 SUPABASE_ANON_KEY = "sb_publishable_xzr4AYx0vHpicyRGNzTZ9Q_kkf1vfLH"
 TABLE_NAME = "reflections"
 FETCH_LIMIT = 20
 
-# Cache of known reflection IDs to detect newly arrived stars
+# Cache of known reflection IDs to detect newly arrived stars in TouchDesigner
 seen_ids = set()
 
-def fetch_recent_reflections():
+
+def fetch_from_local_directory():
+    """
+    Reads reflection records from the local json directory.
+    Supports either all_reflections.json or individual reflection_*.json files.
+    """
+    records = []
+    
+    # 1. Prefer reading individual reflection_*.json files sorted by mod time / timestamp
+    if os.path.isdir(LOCAL_RECORDS_DIR):
+        file_pattern = os.path.join(LOCAL_RECORDS_DIR, "reflection_*.json")
+        json_files = glob.glob(file_pattern)
+        
+        # Sort files by newest modification time first
+        json_files.sort(key=os.path.getmtime, reverse=True)
+        
+        for fpath in json_files[:FETCH_LIMIT]:
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and "id" in data:
+                        records.append(data)
+            except Exception as e:
+                print(f"[TD Local Error] Could not read {fpath}: {e}")
+
+    # 2. Fallback to all_reflections.json if no individual files found
+    if not records and os.path.isfile(LOCAL_ALL_FILE):
+        try:
+            with open(LOCAL_ALL_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    records = data[:FETCH_LIMIT]
+        except Exception as e:
+            print(f"[TD Local Error] Could not read {LOCAL_ALL_FILE}: {e}")
+
+    # 3. Fallback to latest_reflection.json as a single entry
+    if not records and os.path.isfile(LOCAL_LATEST_FILE):
+        try:
+            with open(LOCAL_LATEST_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    records = [data]
+        except Exception as e:
+            print(f"[TD Local Error] Could not read {LOCAL_LATEST_FILE}: {e}")
+
+    return records
+
+
+def fetch_from_supabase():
     """
     Polls the Supabase PostgREST endpoint for recent reflections.
-    Returns a list of flat dictionaries ready for TouchDesigner operators.
     """
     if not SUPABASE_URL.startswith("http"):
-        print("[LAL Warning] Please set a valid SUPABASE_URL in the script.")
+        print("[TD Warning] Please set a valid SUPABASE_URL in the script.")
         return []
 
     endpoint = f"{SUPABASE_URL}/rest/v1/{TABLE_NAME}?select=*&order=timestamp.desc&limit={FETCH_LIMIT}"
@@ -47,11 +106,22 @@ def fetch_recent_reflections():
                 records = json.loads(body)
                 return records
             else:
-                print(f"[LAL Error] Supabase returned status {response.status}")
+                print(f"[TD Error] Supabase returned status {response.status}")
                 return []
     except Exception as e:
-        print(f"[LAL Polling Error] {e}")
+        print(f"[TD Polling Error] {e}")
         return []
+
+
+def fetch_recent_reflections():
+    """
+    Dispatches to local directory or Supabase based on the active MODE.
+    """
+    if MODE.upper() == "LOCAL":
+        return fetch_from_local_directory()
+    else:
+        return fetch_from_supabase()
+
 
 def update_touchdesigner_table(records):
     """
@@ -94,10 +164,10 @@ def update_touchdesigner_table(records):
             str(item.get("td_star_color", "calm")),
             str(item.get("td_star_brightness", 0.6)),
             str(item.get("td_star_scale", 1.2)),
-            str(item.get("td_color_hue", 0.48)),
-            str(item.get("td_color_r", 0.18)),
-            str(item.get("td_color_g", 0.83)),
-            str(item.get("td_color_b", 0.75)),
+            str(item.get("td_color_hue", 0.51)),
+            str(item.get("td_color_r", 0.824)),
+            str(item.get("td_color_g", 0.969)),
+            str(item.get("td_color_b", 0.977)),
             str(item.get("td_line_thickness", 3.0)),
             str(item.get("td_connection_distance", 150)),
             str(item.get("td_rotation_speed", 25.0)),
@@ -105,6 +175,7 @@ def update_touchdesigner_table(records):
             str(item.get("td_pulse_rate_hz", 1.0))
         ]
         table_dat.appendRow(row)
+
 
 def trigger_new_star_event(record):
     """
@@ -118,7 +189,7 @@ def trigger_new_star_event(record):
     rot_speed = record.get("td_rotation_speed", 25.0)
     rgb = (record.get("td_color_r", 0.5), record.get("td_color_g", 0.5), record.get("td_color_b", 0.5))
     
-    print(f"✨ [New Star Formed] ID: {star_id} | Emotion: {feeling} | Brightness: {brightness} | Scale: {scale} | Rot: {rot_speed} deg/s | RGB: {rgb}")
+    print(f"✨ [New Star Formed] Mode: {MODE} | ID: {star_id} | Emotion: {feeling} | Brightness: {brightness} | Scale: {scale} | Rot: {rot_speed} deg/s | RGB: {rgb}")
     
     try:
         trigger_chop = op('trigger_new_star')
@@ -127,9 +198,11 @@ def trigger_new_star_event(record):
     except Exception:
         pass
 
+
 def onFrame():
     """
     Execute DAT callback to poll and update TouchDesigner parameters.
+    Can be called on every frame or on a Timer CHOP tick (e.g. 1 Hz).
     """
     global seen_ids
     records = fetch_recent_reflections()
@@ -146,7 +219,10 @@ def onFrame():
             if len(seen_ids) > len(records):
                 trigger_new_star_event(rec)
 
+
 if __name__ == "__main__":
-    print("Testing TouchDesigner polling handler...")
+    print(f"Testing TouchDesigner handler in MODE = '{MODE}'...")
     data = fetch_recent_reflections()
-    print(f"Fetched {len(data)} records.")
+    print(f"Successfully fetched {len(data)} records in {MODE} mode.")
+    for idx, r in enumerate(data):
+        print(f"  [{idx+1}] {r.get('id')} - {r.get('feeling_label')} (Intensity: {r.get('score_intensity')}, Openness: {r.get('score_openness')}, Mind: {r.get('score_mind_busyness')})")

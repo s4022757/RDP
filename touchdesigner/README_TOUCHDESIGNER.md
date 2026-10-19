@@ -1,28 +1,96 @@
 # TouchDesigner Integration Guide
-### Project: *Libraries Against Loneliness • Reflect & Connect*
+### Project: *CONSTELLATE • Libraries Against Loneliness*
 **Site:** RMIT Swanston Library Level 6 Wellbeing Installation
 
 ---
 
-## 1. System Overview
+## 1. System Overview & Dual Interaction Architecture
+
+The kiosk supports **both local and server-side TouchDesigner interaction** so you can seamlessly choose your playback strategy for prototype testing and on the day of the exhibition:
 
 ```
- ┌────────────────────────┐         ┌─────────────────────────┐         ┌──────────────────────────┐
- │   Interactive Kiosk    │         │    Supabase Database    │         │      TouchDesigner       │
- │      PWA on Tablet     │ ──────> │      (Table: reflections│ ──────> │   Constellation Visual   │
- │ (4 Questions + Stream) │  HTTPS  │     Flat JSON format)   │  POLL   │  (Projection / Display)  │
- └────────────────────────┘         └─────────────────────────┘         └──────────────────────────┘
+                      ┌───────────────────────────────────────┐
+                      │    CONSTELLATE Interactive Kiosk      │
+                      │         (Tablet / Browser PWA)        │
+                      └──────────────────┬────────────────────┘
+                                         │
+                 ┌───────────────────────┴────────────────────────┐
+                 ▼                                                ▼
+     [LOCAL INTERACTION MODE]                         [SERVER-SIDE CLOUD MODE]
+  Zero-internet offline prototype                    Multi-device cloud sync
+                 │                                                │
+                 ▼                                                ▼
+   Local Directory: touchdesigner/records/            Supabase PostgreSQL Table
+   • reflection_<timestamp>_<id>.json                 • reflections table (PostgREST)
+   • latest_reflection.json (single star)
+   • all_reflections.json (full feed)
+                 │                                                │
+                 └───────────────────────┬────────────────────────┘
+                                         │
+                                         ▼
+                      ┌───────────────────────────────────────┐
+                      │             TouchDesigner             │
+                      │     (MODE = "LOCAL" or "SUPABASE")    │
+                      │       Constellation Installation      │
+                      └───────────────────────────────────────┘
 ```
-
-The kiosk interface collects 4 questions (1-question-per-screen) and an optional reflection (text, 30s voice recording, or skipped). Before saving to Supabase, it formats the data as a **flat JSON object** pre-computed with normalized visual parameters specifically designed for TouchDesigner.
 
 ---
 
-## 2. Flat Record Data Structure
+## 2. Choosing Between Local and Server-Side on the Day
 
-Every row in the `reflections` table is structured as a flat object ready for TouchDesigner:
+### How to Toggle Modes in TouchDesigner:
+Open [`touchdesigner_poll_script.py`](./touchdesigner_poll_script.py) in TouchDesigner (inside an Execute DAT or Text DAT) and change line 19:
 
-| Field Name | Type | Range / Format | Description & Mapping |
+```python
+# To read from local directory (100% offline, zero internet needed):
+MODE = "LOCAL"
+
+# Or to read live from the connected Supabase cloud database:
+MODE = "SUPABASE"
+```
+
+Both modes output into the **exact same `table_reflections` DAT**, with identical column names and normalized ranges. Your TouchDesigner CHOPs, SOPs, and MATs will function identically regardless of which mode you select.
+
+---
+
+## 3. Local Directory Output (`touchdesigner/records/`)
+
+When running in **LOCAL mode**, TouchDesigner watches the `./records` directory. The kiosk PWA automatically writes 3 formats to this directory:
+
+1. **`reflection_<id>.json`**: An individual JSON file generated for each student submission.
+2. **`latest_reflection.json`**: Always holds the single most recent submission (great for quick `File In DAT` or `JSON DAT` triggers).
+3. **`all_reflections.json`**: An array containing all historical records in descending order (great for populating full constellation scenes).
+
+### How the Kiosk PWA Outputs to `touchdesigner/records/`:
+
+You have two convenient ways to have the kiosk write files to disk:
+
+#### Option A: Run the Local Bridge Server (Zero-Click, Recommended)
+Run the built-in lightweight local server from your terminal:
+```bash
+npm run start:bridge
+# or: python3 touchdesigner/local_bridge_server.py
+```
+- Opens the kiosk at `http://localhost:8080/`.
+- Every time a student taps "Light My Star", the server automatically captures the flat JSON and writes it into `touchdesigner/records/`.
+- Runs completely offline without external network access.
+
+#### Option B: Direct File System Access API (In Kiosk Settings)
+1. Open the kiosk in any modern browser (Chrome, Edge, etc.).
+2. Click the **TouchDesigner Bridge icon (⚙️)** in the top right.
+3. In the **Local JSON Output Directory** section, click **"Select Output Folder"**.
+4. Select the `touchdesigner/records/` folder.
+5. Grant write permission. The kiosk will now write every submission directly into that directory on your hard drive!
+6. You can also click **"Download Latest JSON"** or **"Export All Records"** at any time.
+
+---
+
+## 4. Flat Record Data Structure
+
+Every record (both in Supabase and in local JSON files) uses the following flat structure:
+
+| Field Name | Type | Range / Format | Description & TouchDesigner Mapping |
 | :--- | :--- | :--- | :--- |
 | `id` | String | `lal_172...` | Unique identifier for the reflection star |
 | `timestamp` | ISO String | UTC Timestamp | Creation time |
@@ -51,28 +119,29 @@ Every row in the `reflections` table is structured as a flat object ready for To
 
 ---
 
-## 3. How to Connect in TouchDesigner
+## 5. TouchDesigner Node Network Setup
 
-### Option A: Using the Python Script (Recommended)
-1. In TouchDesigner, add a **Table DAT** and rename it `table_reflections`.
-2. Add a **Text DAT** or **Execute DAT** and paste the code from [`touchdesigner_poll_script.py`](./touchdesigner_poll_script.py).
-3. Set the Execute DAT to run periodically (e.g., via a **Timer CHOP** pulsing every 1–2 seconds).
-4. The `table_reflections` DAT will automatically populate with rows containing all the flat parameters above.
+### Setup 1: Python Table DAT (Dual-Mode Script)
+1. Add a **Table DAT** and name it `table_reflections`.
+2. Add a **Text DAT** and paste the code from [`touchdesigner_poll_script.py`](./touchdesigner_poll_script.py).
+3. Set an **Execute DAT** (or **Timer CHOP**) to run `onFrame()` periodically (e.g., 1–2 times per second).
+4. `table_reflections` will populate automatically whether you are reading from `records/` or Supabase.
 
-### Option B: Using a Web Client DAT
-1. Place a **Web Client DAT** in your network.
-2. In the **URL** parameter, enter:
-   `https://viwuibpyqwlpztencstv.supabase.co/rest/v1/reflections?select=*&order=timestamp.desc&limit=25`
-3. In the **Headers DAT**, provide:
-   ```
-   apikey           <your-anon-key>
-   Authorization    Bearer <your-anon-key>
-   ```
-4. Attach a **JSON DAT** to the Web Client output to parse the response into DAT tables or Python dictionaries.
+### Setup 2: Direct Folder DAT (Pure TouchDesigner Nodes)
+If you prefer not using Python:
+1. Place a **Folder DAT**. Set `Folder` parameter to `./records` and `File Mask` to `reflection_*.json`.
+2. Attach a **Sort DAT** set to sort by file modification date descending.
+3. Connect to a **File In DAT** or **JSON DAT** referencing the first row of the Folder DAT to load the newest star data.
+
+### Setup 3: Single File In DAT (`latest_reflection.json`)
+1. Place a **JSON DAT** or **File In DAT**.
+2. Set the file path to `./records/latest_reflection.json`.
+3. Set `Auto Reload` to **On**.
+4. Whenever the kiosk writes a new reflection, the node immediately updates!
 
 ---
 
-## 4. Visual Parameter Binding Guide
+## 6. Visual Parameter Binding Guide
 
 - **Star Emotion & Color (`td_color_r`, `td_color_g`, `td_color_b`)**:
   - Connect directly to the RGB channels of a Constant MAT, Line MAT, or Point SOP color attribute (`Cd[0], Cd[1], Cd[2]`).

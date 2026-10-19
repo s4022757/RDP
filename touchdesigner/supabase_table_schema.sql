@@ -63,6 +63,7 @@ CREATE INDEX IF NOT EXISTS idx_reflections_feeling ON public.reflections (feelin
 ALTER TABLE public.reflections ENABLE ROW LEVEL SECURITY;
 
 -- 4. RLS Policy: Allow anonymous kiosk submissions (INSERT)
+DROP POLICY IF EXISTS "Allow anonymous kiosk submissions" ON public.reflections;
 CREATE POLICY "Allow anonymous kiosk submissions"
 ON public.reflections
 FOR INSERT
@@ -70,6 +71,7 @@ TO anon
 WITH CHECK (true);
 
 -- 5. RLS Policy: Allow anonymous read access for TouchDesigner visual installation (SELECT)
+DROP POLICY IF EXISTS "Allow public read access for TouchDesigner visual installation" ON public.reflections;
 CREATE POLICY "Allow public read access for TouchDesigner visual installation"
 ON public.reflections
 FOR SELECT
@@ -81,12 +83,15 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('audio-reflections', 'audio-reflections', true)
 ON CONFLICT (id) DO NOTHING;
 
+-- Safely recreate storage policies
+DROP POLICY IF EXISTS "Allow anonymous audio uploads" ON storage.objects;
 CREATE POLICY "Allow anonymous audio uploads"
 ON storage.objects
 FOR INSERT
 TO anon
 WITH CHECK (bucket_id = 'audio-reflections');
 
+DROP POLICY IF EXISTS "Allow public audio access" ON storage.objects;
 CREATE POLICY "Allow public audio access"
 ON storage.objects
 FOR SELECT
