@@ -1,0 +1,98 @@
+import json, threading, urllib.request
+
+MODE = "SUPABASE"            # or "LOCAL"
+SUPABASE_URL = "https://viwuibpyqwlpztencstv.supabase.co"
+SUPABASE_KEY = "sb_publishable_..."      # publishable key only
+FETCH_LIMIT = 300
+LOCAL_FILE = project.folder + "/records/all_reflections.json"
+
+# ---- Mapping (tweak these in TD, no redeploy needed) ----
+SCORE_MAX = 5                # set to 10 only if the app really sends 1-10
+BRIGHTNESS = (0.25, 1.0)     # Level TOP brightness
+SCALE      = (0.6, 1.6)      # Transform TOP scale (floor keeps small stars visible)
+ROT_SPEED  = (3.0, 45.0)     # degrees/sec
+PALETTE_DAT = 'emotion_palette'   # your 6-emotion table: name | r | g | b
+
+SELECT = ("id,timestamp,feeling_id,score_intensity,score_openness,"
+          "score_mind_busyness,response_type,response_text")
+HEADERS = ["id","timestamp","feeling_id","r","g","b",
+           "brightness","scale","rot_speed","response_text"]
+
+_busy = False
+_pending = None
+_loaded = False
+
+def _n(score):
+    s = max(1, min(SCORE_MAX, int(score)))
+    return (s - 1) / (SCORE_MAX - 1)
+
+def _lerp(rng, n):
+    return rng[0] + n * (rng[1] - rng[0])
+
+def _colour(feeling):
+    pal = op(PALETTE_DAT)
+    try:
+        return [float(pal[feeling, c].val) for c in ('r', 'g', 'b')]
+    except Exception:
+        return [0.8, 0.8, 0.8]          # fallback if emotion not in palette
+
+def _fetch():
+    if MODE.upper() == "LOCAL":
+        with open(LOCAL_FILE, "r", encoding="utf-8") as f:
+            rows = json.load(f)
+        return list(reversed(rows))       # file is newest-first; we want oldest-first
+    url = (f"{SUPABASE_URL}/rest/v1/reflections?select={SELECT}"
+           f"&is_active=eq.true&order=timestamp.asc&limit={FETCH_LIMIT}")
+    req = urllib.request.Request(url, headers={"apikey": SUPABASE_KEY})
+    with urllib.request.urlopen(req, timeout=5) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+def _worker():
+    global _busy, _pending
+    try:
+        _pending = _fetch()
+    except Exception as e:
+        print("[poll] fetch failed:", e)
+    finally:
+        _busy = False
+
+def poll():
+    """Call from a timer. Starts a background fetch, never blocks the render."""
+    global _busy
+    if _busy:
+        return
+    _busy = True
+    threading.Thread(target=_worker, daemon=True).start()
+
+def apply():
+    """Call every frame. Applies fetched rows on the main thread."""
+    global _pending, _loaded
+    if _pending is None:
+        return
+    rows, _pending = _pending, None
+    t = op('table_reflections')
+    if t.numRows == 0:
+        t.appendRow(HEADERS)
+    known = {c.val for c in (t.col(0) or [])}
+    fresh = False
+    for r in rows:
+        rid = str(r.get("id", ""))
+        if not rid or rid in known:
+            continue
+        rr, gg, bb = _colour(r.get("feeling_id", "calm"))
+        t.appendRow([
+            rid, r.get("timestamp", ""), r.get("feeling_id", ""),
+            rr, gg, bb,
+            round(_lerp(BRIGHTNESS, _n(r.get("score_intensity", 3))), 3),
+            round(_lerp(SCALE,      _n(r.get("score_openness", 3))), 3),
+            round(_lerp(ROT_SPEED,  _n(r.get("score_mind_busyness", 3))), 2),
+            r.get("response_text", "") or ""
+        ])
+        known.add(rid)
+        fresh = True
+        if _loaded:                       # don't fire bursts for the initial backlog
+            try:
+                op('trigger_new_star').par.triggerpulse.pulse()
+            except Exception:
+                pass
+    _loaded = True

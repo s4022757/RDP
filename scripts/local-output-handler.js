@@ -3,22 +3,45 @@
  * Project: CONSTELLATE • Libraries Against Loneliness
  * Site: RMIT Swanston Library Level 6 Wellbeing Installation
  *
- * Provides triple-layer local disk output so TouchDesigner can run
- * 100% offline without requiring Supabase:
- * 1. Local HTTP Bridge POST: Sends to local Python server to save directly to touchdesigner/records/
- * 2. File System Access API: Writes directly to a user-selected folder via showDirectoryPicker()
- * 3. File Downloads / Batch Export: Instant download of individual or combined JSON files
+ * Provides identifiable, human-readable local disk output for TouchDesigner:
+ * Naming pattern: reflection_lal_<sequence/sample>_<feeling>.json
+ * Examples:
+ *   reflection_lal_sample_01_calm.json
+ *   reflection_lal_01_calm.json
+ *   reflection_lal_02_anxious.json
  */
 
 class LocalOutputHandler {
   constructor() {
     this.directoryHandle = null;
     this.autoDownloadEnabled = localStorage.getItem('LAL_AUTO_DOWNLOAD_JSON') === 'true';
+    this.sessionCounter = parseInt(sessionStorage.getItem('LAL_SESSION_SUBMIT_COUNT') || '0', 10);
     this.initIndexedDb();
   }
 
   /* -------------------------------------------------------------------------
-     1. IndexedDB Directory Handle Persistence
+     1. Helper: Generate Clean, Identifiable Record Identifier & Filename
+     ------------------------------------------------------------------------- */
+  generateIdentifiableId(record) {
+    const rawId = String(record.id || '').trim();
+    const feeling = String(record.feeling_id || record.feeling_label || 'neutral')
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '');
+
+    // If an explicit descriptive ID was already provided (like lal_sample_01_calm), keep it
+    if (rawId && !rawId.startsWith('lal_17') && !/_[a-z0-9]{6,}$/.test(rawId)) {
+      return rawId.replace(/[:/\\?%*|<>\" ]/g, '-');
+    }
+
+    // Otherwise, generate a clear, sequential, readable ID: lal_01_calm
+    this.sessionCounter += 1;
+    sessionStorage.setItem('LAL_SESSION_SUBMIT_COUNT', this.sessionCounter.toString());
+    const countStr = String(this.sessionCounter).padStart(2, '0');
+    return `lal_${countStr}_${feeling}`;
+  }
+
+  /* -------------------------------------------------------------------------
+     2. IndexedDB Directory Handle Persistence
      ------------------------------------------------------------------------- */
   initIndexedDb() {
     const request = indexedDB.open('ConstellateLocalKioskDB', 1);
@@ -69,13 +92,17 @@ class LocalOutputHandler {
   async verifyPermission(fileHandle, readWrite = true) {
     const options = {};
     if (readWrite) options.mode = 'readwrite';
-    if ((await fileHandle.queryPermission(options)) === 'granted') return true;
-    if ((await fileHandle.requestPermission(options)) === 'granted') return true;
+    try {
+      if ((await fileHandle.queryPermission(options)) === 'granted') return true;
+      if ((await fileHandle.requestPermission(options)) === 'granted') return true;
+    } catch (e) {
+      return false;
+    }
     return false;
   }
 
   /* -------------------------------------------------------------------------
-     2. File System Access API (showDirectoryPicker)
+     3. File System Access API (showDirectoryPicker)
      ------------------------------------------------------------------------- */
   async pickOutputDirectory() {
     if (!('showDirectoryPicker' in window)) {
@@ -115,7 +142,7 @@ class LocalOutputHandler {
       const hasPerm = await this.verifyPermission(this.directoryHandle, true);
       if (!hasPerm) return false;
 
-      // 1. Write individual timestamped record: reflection_<id>.json
+      // 1. Write individual identifiable record: reflection_lal_01_calm.json
       const fileName = `reflection_${record.id}.json`;
       const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
       const writable = await fileHandle.createWritable();
@@ -139,7 +166,7 @@ class LocalOutputHandler {
         allRecords = [];
       }
 
-      allRecords = [record, ...allRecords.filter((r) => r.id !== record.id)];
+      allRecords = [record, ...allRecords.filter((r) => String(r.id) !== String(record.id))];
       const allHandleWrite = await this.directoryHandle.getFileHandle('all_reflections.json', { create: true });
       const allWritable = await allHandleWrite.createWritable();
       await allWritable.write(JSON.stringify(allRecords, null, 2));
@@ -153,11 +180,10 @@ class LocalOutputHandler {
   }
 
   /* -------------------------------------------------------------------------
-     3. Local HTTP Bridge Server Auto-Post
+     4. Local HTTP Bridge Server Auto-Post
      ------------------------------------------------------------------------- */
   async postToLocalBridge(record) {
     try {
-      // Try relative endpoint first (when served via local_bridge_server.py)
       const res = await fetch('/api/save-reflection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +193,6 @@ class LocalOutputHandler {
         return await res.json();
       }
     } catch (e) {
-      // Try fallback to localhost:8080 if kiosk opened from another port or file://
       try {
         const fallbackRes = await fetch('http://localhost:8080/api/save-reflection', {
           method: 'POST',
@@ -178,14 +203,14 @@ class LocalOutputHandler {
           return await fallbackRes.json();
         }
       } catch (e2) {
-        // Silently ignore if local server not running
+        console.warn('[LocalOutput] Local bridge server unreachable on localhost:8080.');
       }
     }
     return null;
   }
 
   /* -------------------------------------------------------------------------
-     4. Browser File Download Utilities
+     5. Browser File Download Utilities
      ------------------------------------------------------------------------- */
   downloadFile(content, fileName, mimeType = 'application/json') {
     const blob = new Blob([content], { type: mimeType });
@@ -216,27 +241,38 @@ class LocalOutputHandler {
   }
 
   /* -------------------------------------------------------------------------
-     5. Unified Save Entry Point (Called on each submission)
+     6. Unified Save Entry Point (Identifiable Naming)
      ------------------------------------------------------------------------- */
   async handleRecordOutput(record) {
+    // 1. Assign human-readable identifiable ID (e.g. lal_01_calm or lal_sample_01_calm)
+    record.id = this.generateIdentifiableId(record);
+
+    if (!record.timestamp) {
+      record.timestamp = new Date().toISOString();
+    }
+
     const results = {
       bridgeSaved: false,
       directorySaved: false,
       downloaded: false
     };
 
-    // 1. Post to local bridge server (touchdesigner/records/)
+    // 2. Post to local bridge server (primary handler)
     const bridgeResult = await this.postToLocalBridge(record);
     if (bridgeResult && bridgeResult.status === 'success') {
       results.bridgeSaved = true;
+      // If the server assigned an index-based ID, sync it back
+      if (bridgeResult.record_id) {
+        record.id = bridgeResult.record_id;
+      }
     }
 
-    // 2. Write to selected directory handle if active
-    if (this.directoryHandle) {
+    // 3. Fallback to direct directory writing only if bridge server is offline
+    if (!results.bridgeSaved && this.directoryHandle) {
       results.directorySaved = await this.writeRecordToDirectory(record);
     }
 
-    // 3. Auto-download fallback if enabled
+    // 4. Download fallback if enabled
     if (this.autoDownloadEnabled) {
       this.downloadSingleRecord(record);
       results.downloaded = true;
