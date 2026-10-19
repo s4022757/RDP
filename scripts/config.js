@@ -158,8 +158,8 @@ const KIOSK_CONFIG = {
     },
     {
       id: 'alt-nearby-know',
-      text: "What would you like someone nearby to know?",
-      subtext: "Something unspoken you carry through this library space today.",
+      text: "What do you wish you could say out loud right now without anyone judging?",
+      subtext: "A silent thought, a pressure you're feeling, or an honest reflection on your day.",
       tag: "Quiet Truths",
       icon: "🌱"
     },

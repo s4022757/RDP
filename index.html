@@ -37,7 +37,7 @@
         </a>
         <div class="brand-text">
           <h1 class="brand-wordmark">CONSTELLATE</h1>
-          <p class="brand-tagline">reflect and connect. • RMIT Swanston Library Level 6</p>
+          <p class="brand-tagline">reflect and connect. • RMIT Swanston Library</p>
         </div>
       </div>
 
@@ -76,7 +76,7 @@
 
         <h2 id="welcome-heading" class="screen-title">Take a quiet breath.</h2>
         <p class="screen-subtitle">
-          Pause for just sixty seconds. Share where you are at today and light up an anonymous star in the collective Swanston Library constellation projection.
+          Pause for just sixty seconds. Share where you're at today and light up an anonymous star in our collective Swanston Library constellation.
         </p>
 
         <!-- Reassurance Notice (Mandatory from To change.md) -->
@@ -96,7 +96,7 @@
           </div>
           <div class="feature-pill">
             <span class="feature-icon" aria-hidden="true">✨</span>
-            <span class="feature-text"><strong>Your Own Star</strong><br>Woven into the library visuals</span>
+            <span class="feature-text"><strong>Your Own Star</strong><br>Woven into the RMIT's constellation</span>
           </div>
         </div>
 
@@ -131,14 +131,14 @@
           <span class="feeling-check-badge" aria-hidden="true">✓</span>
           <span class="feeling-icon" aria-hidden="true">😊</span>
           <span class="feeling-label">Happy</span>
-          <span class="feeling-desc">Lighter, uplifted</span>
+          <span class="feeling-desc">Light, uplifted</span>
         </button>
 
         <button type="button" class="feeling-card selected" data-feeling="calm" role="radio" aria-checked="true">
           <span class="feeling-check-badge" aria-hidden="true">✓</span>
           <span class="feeling-icon" aria-hidden="true">😌</span>
           <span class="feeling-label">Calm</span>
-          <span class="feeling-desc">Grounded, steady</span>
+          <span class="feeling-desc">Grounded, neutral</span>
         </button>
 
         <button type="button" class="feeling-card" data-feeling="tired" role="radio" aria-checked="false">
@@ -152,14 +152,14 @@
           <span class="feeling-check-badge" aria-hidden="true">✓</span>
           <span class="feeling-icon" aria-hidden="true">😰</span>
           <span class="feeling-label">Anxious</span>
-          <span class="feeling-desc">Fluttery, on edge</span>
+          <span class="feeling-desc">Tense, on edge</span>
         </button>
 
         <button type="button" class="feeling-card" data-feeling="sad" role="radio" aria-checked="false">
           <span class="feeling-check-badge" aria-hidden="true">✓</span>
           <span class="feeling-icon" aria-hidden="true">😔</span>
           <span class="feeling-label">Sad</span>
-          <span class="feeling-desc">Heavy, quiet</span>
+          <span class="feeling-desc">Muted, quiet</span>
         </button>
 
         <button type="button" class="feeling-card" data-feeling="frustrated" role="radio" aria-checked="false">
@@ -418,7 +418,7 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
             </svg>
-            <span>Cycle prompt</span>
+            <span>Different question</span>
           </button>
         </div>
         <p id="prompt-question" class="prompt-question-text">
@@ -453,7 +453,7 @@
             id="reflection-text-input" 
             class="reflection-textarea" 
             maxlength="300" 
-            placeholder="Type your reassurance or quiet thought here (anonymous &amp; safe)..."
+            placeholder="Type your thoughts here (anonymous &amp; safe)..."
             aria-label="Reflection text input capped at 300 characters"
           ></textarea>
           <div class="text-meta-row">
@@ -466,6 +466,14 @@
       <!-- PANEL B: AUDIO RECORDING (STRICTLY CAPPED AT 30 SECONDS VIA MEDIARECORDER) -->
       <div id="panel-mode-audio" class="input-panel hidden" role="tabpanel" aria-labelledby="tab-mode-audio">
         <div class="audio-recorder-panel">
+          <!-- Guidance Header for Voice Recording -->
+          <div class="audio-guidance-header">
+            <h3 id="audio-guidance-title" class="audio-guidance-title">Speak your reflection aloud</h3>
+            <p id="audio-guidance-desc" class="audio-guidance-desc">
+              Tap the microphone to record up to 30 seconds. Your voice note will be softly woven into the library constellation.
+            </p>
+          </div>
+
           <!-- Real-time Live Audio Waveform Canvas -->
           <div class="visualizer-canvas-wrapper">
             <canvas id="audio-visualizer-canvas" width="480" height="70" aria-label="Live audio waveform visualizer"></canvas>
@@ -509,6 +517,12 @@
 
           <!-- Microphone Error Notification -->
           <div id="audio-error-message" class="audio-error-alert hidden" role="alert"></div>
+
+          <!-- Bottom Meta Row matching the Text input's text-meta-row -->
+          <div class="audio-meta-row">
+            <span>Non-identifiable voice note &bull; Shared anonymously</span>
+            <span id="audio-status-badge" class="audio-status-badge">Ready to record</span>
+          </div>
         </div>
       </div>
 

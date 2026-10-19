@@ -102,6 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const audioPlayer = document.getElementById('audio-playback-player');
   const audioDurationBadge = document.getElementById('audio-recorded-duration');
   const audioErrorMessage = document.getElementById('audio-error-message');
+  const audioGuidanceTitle = document.getElementById('audio-guidance-title');
+  const audioGuidanceDesc = document.getElementById('audio-guidance-desc');
+  const audioStatusBadge = document.getElementById('audio-status-badge');
 
   // Actions
   const btnBegin = document.getElementById('btn-begin-reflection');
@@ -373,6 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (mode === 'text' && audioRecorder.state === 'recording') {
       audioRecorder.cancelRecording();
+    } else if (mode === 'audio' && audioRecorder.state === 'idle') {
+      audioRecorder.drawIdleWaveform();
     }
   }
 
@@ -385,9 +390,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (recState === 'idle') {
       audioTimerDisplay.textContent = `00:00 / 00:${KIOSK_CONFIG.maxAudioDurationSec}`;
       audioTimerDisplay.classList.remove('timer-warning');
-      if (audioVisualizerCanvas) {
-        const ctx = audioVisualizerCanvas.getContext('2d');
-        ctx.clearRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
+      if (audioGuidanceTitle) audioGuidanceTitle.textContent = 'Speak your reflection aloud';
+      if (audioGuidanceDesc) audioGuidanceDesc.textContent = 'Tap the microphone to record up to 30 seconds. Your voice note will be softly woven into the library constellation.';
+      if (audioStatusBadge) {
+        audioStatusBadge.textContent = 'Ready to record';
+        audioStatusBadge.classList.remove('recording');
+      }
+      if (audioRecorder) audioRecorder.drawIdleWaveform();
+    } else if (recState === 'recording') {
+      if (audioGuidanceTitle) audioGuidanceTitle.textContent = 'Listening... Speak clearly';
+      if (audioGuidanceDesc) audioGuidanceDesc.textContent = 'Recording your voice reflection. Tap the square button when you are finished, or speak for up to 30 seconds.';
+      if (audioStatusBadge) {
+        audioStatusBadge.textContent = 'Recording in progress';
+        audioStatusBadge.classList.add('recording');
+      }
+    } else if (recState === 'recorded') {
+      if (audioGuidanceTitle) audioGuidanceTitle.textContent = 'Reflection recorded!';
+      if (audioGuidanceDesc) audioGuidanceDesc.textContent = 'You can listen back to your voice note below, or tap Re-record if you wish to try again.';
+      if (audioStatusBadge) {
+        audioStatusBadge.textContent = '✓ Ready to submit';
+        audioStatusBadge.classList.remove('recording');
+      }
+    } else if (recState === 'error') {
+      if (audioGuidanceTitle) audioGuidanceTitle.textContent = 'Microphone unavailable';
+      if (audioGuidanceDesc) audioGuidanceDesc.textContent = 'Microphone permission was denied or not supported on this device. You can freely switch to the "Write Reflection" tab above.';
+      if (audioStatusBadge) {
+        audioStatusBadge.textContent = 'Switched to text';
+        audioStatusBadge.classList.remove('recording');
       }
     }
   }

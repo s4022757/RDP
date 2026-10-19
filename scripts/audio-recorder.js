@@ -29,6 +29,9 @@ class KioskAudioRecorder {
     this.canvas = options.canvas || null;
 
     this.state = 'idle'; // idle | recording | recorded | error
+    if (this.canvas) {
+      setTimeout(() => this.drawIdleWaveform(), 60);
+    }
   }
 
   isSupported() {
@@ -94,6 +97,7 @@ class KioskAudioRecorder {
         this.recordedBase64 = await this.blobToBase64(this.recordedBlob);
 
         this.stopVisualizer();
+        this.drawRecordedWaveform();
         this.releaseStream();
 
         this.state = 'recorded';
@@ -166,6 +170,7 @@ class KioskAudioRecorder {
     this.recordedBase64 = null;
     this.recordedDuration = 0;
     this.state = 'idle';
+    this.drawIdleWaveform();
     this.onStateChange(this.state);
   }
 
@@ -209,19 +214,22 @@ class KioskAudioRecorder {
         let x = 0;
 
         for (let i = 0; i < bufferLength; i++) {
-          const barHeight = Math.max(3, (dataArray[i] / 255) * height * 0.9);
+          const barHeight = Math.max(4, (dataArray[i] / 255) * height * 0.92);
 
-          // Calming gradient from cyan to amber
-          const grad = ctx.createLinearGradient(0, height, 0, height - barHeight);
-          grad.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
-          grad.addColorStop(0.5, 'rgba(129, 140, 248, 0.8)');
-          grad.addColorStop(1, 'rgba(251, 191, 36, 0.95)');
-
-          ctx.fillStyle = grad;
-          // Symmetrical rounded bar centered vertically
+          // Constellate palette: Slate Teal (#528B90) -> Ice Cyan (#D2F7F9) -> Pale Starlight Lime (#ECF8C0)
           const y = (height - barHeight) / 2;
+          const grad = ctx.createLinearGradient(0, height - y, 0, y);
+          grad.addColorStop(0, 'rgba(82, 139, 144, 0.45)');   // Muted Slate Teal #528B90
+          grad.addColorStop(0.5, 'rgba(210, 247, 249, 0.85)'); // Ice Starlight Cyan #D2F7F9
+          grad.addColorStop(1, 'rgba(236, 248, 192, 1.0)');    // Pale Starlight Lime #ECF8C0
+
+          ctx.shadowColor = 'rgba(236, 248, 192, 0.45)';
+          ctx.shadowBlur = 6;
+          ctx.fillStyle = grad;
+
+          // Symmetrical rounded bar centered vertically
           ctx.beginPath();
-          ctx.roundRect(x, y, barWidth - 2, barHeight, 3);
+          ctx.roundRect(x, y, Math.max(2, barWidth - 3), barHeight, 3);
           ctx.fill();
 
           x += barWidth;
@@ -234,14 +242,75 @@ class KioskAudioRecorder {
     }
   }
 
+  /**
+   * Draws a gentle, calm resting baseline on the canvas when idle
+   */
+  drawIdleWaveform() {
+    if (!this.canvas) return;
+    const ctx = this.canvas.getContext('2d');
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    ctx.clearRect(0, 0, width, height);
+
+    const barCount = 32;
+    const barWidth = (width / barCount) * 0.65;
+    const step = width / barCount;
+
+    ctx.shadowBlur = 0;
+
+    for (let i = 0; i < barCount; i++) {
+      const normalizedDist = Math.sin((i / (barCount - 1)) * Math.PI);
+      const barHeight = Math.max(4, normalizedDist * 18);
+      const x = i * step + (step - barWidth) / 2;
+      const y = (height - barHeight) / 2;
+
+      ctx.fillStyle = `rgba(210, 247, 249, ${0.18 + normalizedDist * 0.3})`;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barWidth, barHeight, 2);
+      ctx.fill();
+    }
+  }
+
+  /**
+   * Draws the frozen captured waveform once audio recording is completed
+   */
+  drawRecordedWaveform() {
+    if (!this.canvas) return;
+    const ctx = this.canvas.getContext('2d');
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    ctx.clearRect(0, 0, width, height);
+
+    const barCount = 32;
+    const barWidth = (width / barCount) * 0.7;
+    const step = width / barCount;
+
+    for (let i = 0; i < barCount; i++) {
+      const envelope = Math.sin((i / (barCount - 1)) * Math.PI);
+      const ripple = 0.5 + 0.5 * Math.sin(i * 1.3);
+      const barHeight = Math.max(6, envelope * ripple * (height * 0.75));
+      const x = i * step + (step - barWidth) / 2;
+      const y = (height - barHeight) / 2;
+
+      const grad = ctx.createLinearGradient(0, height - y, 0, y);
+      grad.addColorStop(0, 'rgba(82, 139, 144, 0.6)');
+      grad.addColorStop(0.6, 'rgba(210, 247, 249, 0.9)');
+      grad.addColorStop(1, 'rgba(236, 248, 192, 1.0)');
+
+      ctx.shadowColor = 'rgba(236, 248, 192, 0.5)';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = grad;
+
+      ctx.beginPath();
+      ctx.roundRect(x, y, barWidth, barHeight, 3);
+      ctx.fill();
+    }
+  }
+
   stopVisualizer() {
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
-    }
-    if (this.canvas) {
-      const ctx = this.canvas.getContext('2d');
-      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
   }
 
