@@ -1,13 +1,14 @@
 /**
- * Libraries Against Loneliness • Reflect & Connect
- * Central Application Configuration & Built-in Prompt Bank
+ * CONSTELLATE • Libraries Against Loneliness
+ * Central Application Configuration & Guidance
  * Site: RMIT Swanston Library Level 6 Wellbeing Installation
+ * Aligned with "Colour palette.md" and "styleguide.pdf".
  */
 
 const KIOSK_CONFIG = {
   kioskId: 'rmit-swanston-lvl6-booth-01',
-  installationName: 'Libraries Against Loneliness',
-  subheading: 'Reflect & Connect • Generative Constellation',
+  installationName: 'CONSTELLATE',
+  subheading: 'reflect and connect. • RMIT Swanston Library Level 6',
   
   // Idle timeout settings (in seconds)
   idleTimeoutSec: 80,
@@ -17,99 +18,234 @@ const KIOSK_CONFIG = {
   maxTextChars: 300,
   maxAudioDurationSec: 30,
 
-  // Built-in rotating prompt bank
-  prompts: [
+  // Warm reassurance notice
+  reassuranceNotice: "There are no wrong answers here. Take whatever time you need.",
+
+  // Question 1: Emotional Feeling (Never encoded in colour alone - uses word plus icon)
+  // Palettes harmonized with the styleguide duos:
+  // Variant 1: #102D37 Core & #ECF8C0 Accent (Lime)
+  // Variant 2: #528B90 Core & #D2F7F9 Accent (Ice Cyan)
+  // Variant 3: #255953 Core & #8C9E50 Accent (Olive)
+  feelings: [
     {
-      id: 'encouragement',
-      text: "If you could share a single word of encouragement with someone else walking through this space today, what would it be?",
-      tag: "Words of Warmth",
-      icon: "💬"
+      id: 'happy',
+      label: 'Happy',
+      icon: '😊',
+      colorName: 'Starlight Lime',
+      hue: 0.19,
+      rgb: [0.925, 0.973, 0.753],
+      cssColor: '#ECF8C0',
+      description: 'Lighter, uplifted, or content'
     },
     {
-      id: 'quiet-thought',
-      text: "What is one quiet thought you've been carrying with you today as you study?",
-      tag: "Inner Reflection",
-      icon: "🌱"
+      id: 'calm',
+      label: 'Calm',
+      icon: '😌',
+      colorName: 'Ice Starlight',
+      hue: 0.51,
+      rgb: [0.824, 0.969, 0.977],
+      cssColor: '#D2F7F9',
+      description: 'Grounded, peaceful, or steady'
     },
     {
-      id: 'peace-moment',
-      text: "What does a moment of peace feel like to you in the middle of a busy university week?",
-      tag: "Mindful Pause",
-      icon: "🕊️"
+      id: 'tired',
+      label: 'Tired',
+      icon: '🥱',
+      colorName: 'Muted Slate Teal',
+      hue: 0.51,
+      rgb: [0.322, 0.545, 0.565],
+      cssColor: '#528B90',
+      description: 'Low battery, drained, or sleepy'
     },
     {
-      id: 'library-wish',
-      text: "If this room could hear one gentle wish for everyone sharing this space right now, what would you say?",
-      tag: "Collective Hope",
-      icon: "✨"
+      id: 'anxious',
+      label: 'Anxious',
+      icon: '😰',
+      colorName: 'Eucalyptus Teal',
+      hue: 0.47,
+      rgb: [0.145, 0.349, 0.325],
+      cssColor: '#255953',
+      description: 'On edge, fluttery, or uneasy'
     },
     {
-      id: 'grounding',
-      text: "What is something small—a sound, a sight, a cup of tea—that helped ground you recently?",
-      tag: "Simple Comforts",
-      icon: "☕"
+      id: 'sad',
+      label: 'Sad',
+      icon: '😔',
+      colorName: 'Quiet Midnight Teal',
+      hue: 0.54,
+      rgb: [0.063, 0.177, 0.216],
+      cssColor: '#102D37',
+      description: 'Heavy, quiet, or holding something'
+    },
+    {
+      id: 'frustrated',
+      label: 'Frustrated',
+      icon: '😤',
+      colorName: 'Olive Chartreuse',
+      hue: 0.21,
+      rgb: [0.549, 0.620, 0.314],
+      cssColor: '#8C9E50',
+      description: 'Stuck, overwhelmed, or annoyed'
     }
   ],
 
-  // Scale question specifications
-  scales: {
-    connectedness: {
-      id: 'connectedness',
-      number: 1,
-      title: "Environmental Connectedness",
-      question: "Right now, how connected do you feel to the energy and people around you in this space?",
-      minLabel: "In my own bubble",
-      midLabel: "Quietly aware",
-      maxLabel: "Warmly connected",
-      defaultVal: 5,
-      tdTarget: "Line Thickness & Proximity"
-    },
-    socialEnergy: {
-      id: 'socialEnergy',
-      number: 2,
-      title: "Social Energy / Battery",
-      question: "How would you describe your social energy today—are you leaning toward quiet focus or an open door to others?",
-      minLabel: "Deep quiet focus",
-      midLabel: "Gentle balance",
-      maxLabel: "Open door to others",
-      defaultVal: 5,
-      tdTarget: "Star Color Hue & Warmth"
-    },
-    collectiveEmpathy: {
-      id: 'collectiveEmpathy',
-      number: 3,
-      title: "Collective Empathy",
-      question: "How much do you feel that others around you might be sharing similar thoughts or study pressures right now?",
-      minLabel: "Carrying it alone",
-      midLabel: "Sense of overlap",
-      maxLabel: "Shared journey together",
-      defaultVal: 6,
-      tdTarget: "Star Luminosity & Glow"
-    }
+  // Question 2: Star Intensity (1-5)
+  intensityScale: {
+    id: 'intensity',
+    question: "How strongly are you feeling that right now?",
+    subtitle: "This guides the luminosity and brightness of your star in the space.",
+    min: 1,
+    max: 5,
+    defaultVal: 3,
+    steps: [
+      { val: 1, label: "Barely there", sub: "A faint whisper" },
+      { val: 2, label: "A little", sub: "Noticeable, but gentle" },
+      { val: 3, label: "Moderate", sub: "Present and steady" },
+      { val: 4, label: "Quite strong", sub: "Deeply felt right now" },
+      { val: 5, label: "Very strong", sub: "Intense and front-of-mind" }
+    ]
   },
 
-  // TouchDesigner visual parameter mapping ranges
-  touchDesignerMapping: {
-    // Collective Empathy (1-10) -> Star Brightness (0.15 to 1.00)
-    brightness: { min: 0.15, max: 1.00 },
-    // Collective Empathy (1-10) -> Pulse Rate Hz (0.2 Hz to 2.2 Hz)
-    pulseRate: { min: 0.2, max: 2.2 },
-    // Social Energy (1-10) -> Color Hue in HSV/Degrees (0.0 to 1.0)
-    // 1 (Quiet focus) = Cool Indigo/Teal (Hue ~ 0.62)
-    // 10 (Open door) = Radiant Amber/Gold/Rose (Hue ~ 0.08)
-    hueRange: { focus: 0.62, open: 0.08 },
-    // Connectedness (1-10) -> Constellation line thickness (0.8 to 6.5)
-    lineThickness: { min: 0.8, max: 6.5 },
-    // Connectedness (1-10) -> Connection clustering distance (60 to 280)
-    connectionRadius: { min: 60, max: 280 },
-    // Star particle scale (0.6 to 2.4)
-    starScale: { min: 0.6, max: 2.4 }
+  // Question 3: Scale & Presence (1-5)
+  opennessScale: {
+    id: 'openness',
+    question: "How open do you feel to the people around you right now?",
+    subtitle: "This shapes the size of your star and its connection lines in the space.",
+    min: 1,
+    max: 5,
+    defaultVal: 3,
+    steps: [
+      { val: 1, label: "Turned inward", sub: "In my own quiet bubble" },
+      { val: 2, label: "A little busy", sub: "Mostly focused on my work" },
+      { val: 3, label: "Somewhere in between", sub: "Balanced, aware of others" },
+      { val: 4, label: "Fairly open", sub: "Welcoming gentle connection" },
+      { val: 5, label: "Get amongst it!", sub: "Energised and eager to connect" }
+    ]
   },
+
+  // Question 4: Rotation & Orientation (1-5)
+  mindScale: {
+    id: 'mind',
+    question: "How busy does your mind feel right now?",
+    subtitle: "This sets the gentle orbit and rotation of your star across the installation.",
+    min: 1,
+    max: 5,
+    defaultVal: 3,
+    steps: [
+      { val: 1, label: "Very quiet", sub: "Still, slow, meditative" },
+      { val: 2, label: "Mostly quiet", sub: "Gentle thoughts drifting by" },
+      { val: 3, label: "In between", sub: "Normal study focus" },
+      { val: 4, label: "Quite busy", sub: "Many tabs open in mind" },
+      { val: 5, label: "Racing", sub: "Full speed, thoughts swirling" }
+    ]
+  },
+
+  // Open-Ended Prompt Bank (Main + Alternative Pool from To change.md)
+  prompts: [
+    {
+      id: 'main-library-connection',
+      text: "If someone else in the library was feeling the exact same way, what would you want them to hear?",
+      subtext: "You can share a thought, a piece of advice, reassurance, or something you wish someone told you today.",
+      tag: "Shared Experience",
+      icon: "💬"
+    },
+    {
+      id: 'alt-felt-the-way',
+      text: "If someone else felt the way you do right now, what would you want them to hear?",
+      subtext: "A gentle sentence can travel far across this room.",
+      tag: "Words of Warmth",
+      icon: "🕊️"
+    },
+    {
+      id: 'alt-nearby-know',
+      text: "What would you like someone nearby to know?",
+      subtext: "Something unspoken you carry through this library space today.",
+      tag: "Quiet Truths",
+      icon: "🌱"
+    },
+    {
+      id: 'alt-words-encouragement',
+      text: "If you could share some words of encouragement with someone else in the library today, what would it be?",
+      subtext: "A quick reminder that we're all figuring it out together.",
+      tag: "Encouragement",
+      icon: "✨"
+    },
+    {
+      id: 'alt-quiet-thought',
+      text: "What is one quiet thought you've been carrying with you today as you study?",
+      subtext: "A phrase, a memory, or a lingering question.",
+      tag: "Inner Reflection",
+      icon: "📖"
+    },
+    {
+      id: 'alt-peace-moment',
+      text: "What does a moment of peace feel like to you in the middle of a busy university week?",
+      subtext: "A breath, looking out the window, or closing your laptop.",
+      tag: "Mindful Pause",
+      icon: "☕"
+    },
+    {
+      id: 'alt-gentle-wish',
+      text: "If this room could hear one gentle wish for everyone sharing this space right now, what would you say?",
+      subtext: "Sending goodwill to fellow students.",
+      tag: "Collective Hope",
+      icon: "🌟"
+    },
+    {
+      id: 'alt-grounding',
+      text: "What is something that helped ground you recently? It could be a sound, a sight, a memory or even a cup of tea!",
+      subtext: "Small anchors that bring us back to calm.",
+      tag: "Simple Comforts",
+      icon: "🍵"
+    },
+    {
+      id: 'alt-happy-place',
+      text: "What is your happy place?",
+      subtext: "A corner of the city, a favourite spot at home, or a memory.",
+      tag: "Safe Haven",
+      icon: "🏡"
+    }
+  ],
+
+  // Consent line for open response
+  consentLine: "By sharing your reflection, you agree that your anonymous words or voice recording may be softly projected in the library installation. No names or personal identifiers are ever collected or stored.",
+
+  // Support links (appear at the end of the form regardless of user response)
+  supportLinks: [
+    {
+      name: "RMIT Counselling and Psychological Services",
+      tagline: "Free, confidential wellbeing support for all RMIT students.",
+      phone: "03 9925 5000",
+      phoneAction: "tel:0399255000",
+      hours: "Monday – Friday: 9am – 5pm",
+      afterHours: "1300 305 737 (After hours crisis line) or Text 0488 884 165",
+      url: "https://www.rmit.edu.au/students/support-services/counselling",
+      icon: "🎓"
+    },
+    {
+      name: "Headspace",
+      tagline: "Free mental health and wellbeing support for young people aged 12–25.",
+      phone: "1800 650 890",
+      phoneAction: "tel:1800650890",
+      hours: "9am – 1am AEDT daily",
+      url: "https://headspace.org.au",
+      icon: "🌱"
+    },
+    {
+      name: "Lifeline (24/7 Crisis Support)",
+      tagline: "Immediate crisis support and suicide prevention services.",
+      phone: "13 11 14",
+      phoneAction: "tel:131114",
+      hours: "Available 24 hours a day, 7 days a week",
+      url: "https://www.lifeline.org.au",
+      icon: "💙"
+    }
+  ],
 
   // Supabase defaults (can be edited directly in the Kiosk Settings UI or overridden here)
   supabase: {
-    url: localStorage.getItem('LAL_SUPABASE_URL') || '',
-    anonKey: localStorage.getItem('LAL_SUPABASE_KEY') || '',
+    url: localStorage.getItem('LAL_SUPABASE_URL') || 'https://viwuibpyqwlpztencstv.supabase.co',
+    anonKey: localStorage.getItem('LAL_SUPABASE_KEY') || 'sb_publishable_xzr4AYx0vHpicyRGNzTZ9Q_kkf1vfLH',
     tableName: 'reflections',
     storageBucket: 'audio-reflections'
   }

@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#070B14">
-  <meta name="description" content="Libraries Against Loneliness - Interactive RMIT Swanston Library installation kiosk connecting student wellbeing with generative TouchDesigner constellation visuals.">
+  <meta name="theme-color" content="#102D37">
+  <meta name="description" content="CONSTELLATE • Libraries Against Loneliness - Interactive RMIT Swanston Library installation kiosk connecting student wellbeing with generative TouchDesigner constellation visuals.">
   
-  <title>Libraries Against Loneliness • Reflect &amp; Connect</title>
+  <title>CONSTELLATE • reflect and connect. • RMIT Swanston Library</title>
 
   <!-- PWA Manifest & App Icons -->
   <link rel="manifest" href="./manifest.webmanifest">
@@ -32,12 +32,12 @@
     <!-- Top Header / Kiosk Navigation Bar -->
     <header class="kiosk-header" role="banner">
       <div class="brand-wrapper">
-        <a href="#welcome" class="brand-icon-link" aria-label="Libraries Against Loneliness home">
-          <img src="./icons/icon.svg" alt="Constellation Logo" class="brand-icon" width="36" height="36">
+        <a href="#welcome" class="brand-icon-link" aria-label="CONSTELLATE home">
+          <img src="./icons/icon.svg" alt="CONSTELLATE Logo" class="brand-icon" width="36" height="36">
         </a>
         <div class="brand-text">
-          <h1>Libraries Against Loneliness</h1>
-          <p class="brand-tagline">RMIT Swanston Library • Level 6 Wellbeing Kiosk</p>
+          <h1 class="brand-wordmark">CONSTELLATE</h1>
+          <p class="brand-tagline">reflect and connect. • RMIT Swanston Library Level 6</p>
         </div>
       </div>
 
@@ -56,7 +56,7 @@
           </svg>
         </button>
         <!-- TouchDesigner Bridge / Setup Drawer -->
-        <button id="btn-open-dev-modal" class="icon-button" type="button" aria-label="Open TouchDesigner & Supabase settings" title="TouchDesigner Bridge">
+        <button id="btn-open-dev-modal" class="icon-button" type="button" aria-label="Open TouchDesigner &amp; Supabase settings" title="TouchDesigner Bridge">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -65,7 +65,7 @@
       </nav>
     </header>
 
-    <!-- SCREEN 1: ATTRACT / WELCOME -->
+    <!-- SCREEN 0: ATTRACT / WELCOME -->
     <section id="screen-welcome" class="kiosk-screen fade-in" aria-labelledby="welcome-heading">
       <div class="welcome-hero">
         <div class="welcome-emblem">
@@ -79,22 +79,28 @@
           Pause for just sixty seconds. Share where you are at today and light up an anonymous star in the collective Swanston Library constellation projection.
         </p>
 
+        <!-- Reassurance Notice (Mandatory from To change.md) -->
+        <div class="reassurance-banner" role="note">
+          <span class="reassurance-icon" aria-hidden="true">🌱</span>
+          <p class="reassurance-text"><strong>There are no wrong answers here.</strong> Take whatever time you need, and share only what feels comfortable.</p>
+        </div>
+
         <div class="welcome-features">
           <div class="feature-pill">
             <span class="feature-icon" aria-hidden="true">💫</span>
-            <span class="feature-text"><strong>3 Quick Scales</strong><br>Reflect on your energy &amp; connection</span>
+            <span class="feature-text"><strong>4 Gentle Questions</strong><br>Emotion, intensity, presence &amp; mind</span>
           </div>
           <div class="feature-pill">
             <span class="feature-icon" aria-hidden="true">🕊️</span>
-            <span class="feature-text"><strong>1 Reflection</strong><br>Text (300 chars) or 30s Voice</span>
+            <span class="feature-text"><strong>1 Reflection (Optional)</strong><br>Text, 30s voice, or skip</span>
           </div>
           <div class="feature-pill">
             <span class="feature-icon" aria-hidden="true">✨</span>
-            <span class="feature-text"><strong>Your Own Star</strong><br>Feeds the live TouchDesigner installation</span>
+            <span class="feature-text"><strong>Your Own Star</strong><br>Woven into the library visuals</span>
           </div>
         </div>
 
-        <button id="btn-begin-reflection" class="btn btn-primary btn-large btn-pulse" type="button" id="btn-start">
+        <button id="btn-begin-reflection" class="btn btn-primary btn-large btn-pulse" type="button">
           <span>Begin Check-In</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -104,151 +110,310 @@
       </div>
     </section>
 
-    <!-- SCREEN 2: THREE REFLECTION SCALES (1-10) -->
-    <section id="screen-scales" class="kiosk-screen hidden" aria-labelledby="scales-heading">
-      <div class="screen-header-block">
-        <span class="scale-badge scale-badge-indigo">Step 1 of 2 • Sensory Scales</span>
-        <h2 id="scales-heading" class="screen-title">How is your space feeling right now?</h2>
-        <p class="screen-subtitle">Select any rating from 1 to 10 by sliding or tapping the number directly.</p>
+    <!-- SCREEN 1: QUESTION 1 — EMOTION / FEELING (Word + Icon, Not Color Alone) -->
+    <section id="screen-q1-feeling" class="kiosk-screen hidden" aria-labelledby="q1-heading">
+      <div class="step-progress-wrapper">
+        <div class="step-progress-header">
+          <span class="step-progress-badge">Step 1 of 5</span>
+          <span class="step-progress-count">Question 1 of 4</span>
+        </div>
+        <div class="step-progress-bar"><div class="step-progress-fill" style="width: 20%;"></div></div>
       </div>
 
-      <div class="scales-container">
-        <!-- Scale 1: Environmental Connectedness -->
-        <article class="scale-card" id="card-scale-connectedness">
-          <div class="scale-header">
-            <div class="scale-meta">
-              <span class="scale-badge scale-badge-indigo">1 • Environmental Connectedness</span>
-              <h3 class="scale-title">Connection to the Space</h3>
-              <p class="scale-question">Right now, how connected do you feel to the energy and people around you in this space?</p>
-            </div>
-            <div class="scale-value-display">
-              <span id="val-connectedness" class="scale-val-number">5</span>
-              <span class="scale-val-max">/ 10</span>
-            </div>
-          </div>
+      <div class="question-header">
+        <h2 id="q1-heading" class="question-title">How are you feeling right now?</h2>
+        <p class="question-subtitle">Choose whatever feels closest. There are no right or wrong answers.</p>
+      </div>
 
-          <div class="scale-slider-wrapper">
-            <input 
-              type="range" 
-              id="slider-connectedness" 
-              class="kiosk-slider" 
-              min="1" 
-              max="10" 
-              step="1" 
-              value="5" 
-              aria-label="Environmental connectedness from 1 to 10"
-            >
-          </div>
+      <!-- Feeling Cards (Word + Icon Grid, 6 options) -->
+      <div class="feelings-grid" role="radiogroup" aria-labelledby="q1-heading">
+        <button type="button" class="feeling-card" data-feeling="happy" role="radio" aria-checked="false">
+          <span class="feeling-check-badge" aria-hidden="true">✓</span>
+          <span class="feeling-icon" aria-hidden="true">😊</span>
+          <span class="feeling-label">Happy</span>
+          <span class="feeling-desc">Lighter, uplifted</span>
+        </button>
 
-          <div class="scale-spectrum-labels">
-            <span class="label-min">1 • In my own bubble</span>
-            <span class="label-mid">Quietly aware</span>
-            <span class="label-max">10 • Warmly connected</span>
-          </div>
+        <button type="button" class="feeling-card selected" data-feeling="calm" role="radio" aria-checked="true">
+          <span class="feeling-check-badge" aria-hidden="true">✓</span>
+          <span class="feeling-icon" aria-hidden="true">😌</span>
+          <span class="feeling-label">Calm</span>
+          <span class="feeling-desc">Grounded, steady</span>
+        </button>
 
-          <!-- 1-10 Accessible Touch Pills -->
-          <div class="scale-pills-row" id="pills-connectedness" role="group" aria-label="Rating 1 to 10 pills for Environmental Connectedness"></div>
-        </article>
+        <button type="button" class="feeling-card" data-feeling="tired" role="radio" aria-checked="false">
+          <span class="feeling-check-badge" aria-hidden="true">✓</span>
+          <span class="feeling-icon" aria-hidden="true">🥱</span>
+          <span class="feeling-label">Tired</span>
+          <span class="feeling-desc">Low battery, drained</span>
+        </button>
 
-        <!-- Scale 2: Social Energy / Battery -->
-        <article class="scale-card" id="card-scale-social-energy">
-          <div class="scale-header">
-            <div class="scale-meta">
-              <span class="scale-badge scale-badge-amber">2 • Social Battery</span>
-              <h3 class="scale-title">Social Energy Today</h3>
-              <p class="scale-question">How would you describe your social energy today—are you leaning toward quiet focus or an open door to others?</p>
-            </div>
-            <div class="scale-value-display">
-              <span id="val-social-energy" class="scale-val-number">5</span>
-              <span class="scale-val-max">/ 10</span>
-            </div>
-          </div>
+        <button type="button" class="feeling-card" data-feeling="anxious" role="radio" aria-checked="false">
+          <span class="feeling-check-badge" aria-hidden="true">✓</span>
+          <span class="feeling-icon" aria-hidden="true">😰</span>
+          <span class="feeling-label">Anxious</span>
+          <span class="feeling-desc">Fluttery, on edge</span>
+        </button>
 
-          <div class="scale-slider-wrapper">
-            <input 
-              type="range" 
-              id="slider-social-energy" 
-              class="kiosk-slider" 
-              min="1" 
-              max="10" 
-              step="1" 
-              value="5" 
-              aria-label="Social energy from 1 to 10"
-            >
-          </div>
+        <button type="button" class="feeling-card" data-feeling="sad" role="radio" aria-checked="false">
+          <span class="feeling-check-badge" aria-hidden="true">✓</span>
+          <span class="feeling-icon" aria-hidden="true">😔</span>
+          <span class="feeling-label">Sad</span>
+          <span class="feeling-desc">Heavy, quiet</span>
+        </button>
 
-          <div class="scale-spectrum-labels">
-            <span class="label-min">1 • Deep quiet focus</span>
-            <span class="label-mid">Gentle balance</span>
-            <span class="label-max">10 • Open door to others</span>
-          </div>
-
-          <!-- 1-10 Accessible Touch Pills -->
-          <div class="scale-pills-row" id="pills-social-energy" role="group" aria-label="Rating 1 to 10 pills for Social Energy"></div>
-        </article>
-
-        <!-- Scale 3: Collective Empathy -->
-        <article class="scale-card" id="card-scale-collective-empathy">
-          <div class="scale-header">
-            <div class="scale-meta">
-              <span class="scale-badge scale-badge-teal">3 • Collective Empathy</span>
-              <h3 class="scale-title">Shared Pressures &amp; Empathy</h3>
-              <p class="scale-question">How much do you feel that others around you might be sharing similar thoughts or study pressures right now?</p>
-            </div>
-            <div class="scale-value-display">
-              <span id="val-collective-empathy" class="scale-val-number">6</span>
-              <span class="scale-val-max">/ 10</span>
-            </div>
-          </div>
-
-          <div class="scale-slider-wrapper">
-            <input 
-              type="range" 
-              id="slider-collective-empathy" 
-              class="kiosk-slider" 
-              min="1" 
-              max="10" 
-              step="1" 
-              value="6" 
-              aria-label="Collective empathy from 1 to 10"
-            >
-          </div>
-
-          <div class="scale-spectrum-labels">
-            <span class="label-min">1 • Carrying it alone</span>
-            <span class="label-mid">Sense of overlap</span>
-            <span class="label-max">10 • Shared journey together</span>
-          </div>
-
-          <!-- 1-10 Accessible Touch Pills -->
-          <div class="scale-pills-row" id="pills-collective-empathy" role="group" aria-label="Rating 1 to 10 pills for Collective Empathy"></div>
-        </article>
+        <button type="button" class="feeling-card" data-feeling="frustrated" role="radio" aria-checked="false">
+          <span class="feeling-check-badge" aria-hidden="true">✓</span>
+          <span class="feeling-icon" aria-hidden="true">😤</span>
+          <span class="feeling-label">Frustrated</span>
+          <span class="feeling-desc">Stuck, overwhelmed</span>
+        </button>
       </div>
 
       <div class="nav-actions-row">
-        <span></span>
-        <button id="btn-to-open-ended" class="btn btn-primary" type="button">
-          <span>Continue to Open Reflection</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
+        <button id="btn-q1-back" class="btn btn-secondary" type="button">
+          <span>← Back</span>
+        </button>
+        <button id="btn-q1-next" class="btn btn-primary" type="button">
+          <span>Next: Star Intensity →</span>
         </button>
       </div>
     </section>
 
-    <!-- SCREEN 3: OPEN-ENDED RESPONSE (ROTATING PROMPT BANK & DUAL INPUT) -->
-    <section id="screen-open-ended" class="kiosk-screen hidden" aria-labelledby="prompt-heading">
-      <div class="screen-header-block">
-        <span class="scale-badge scale-badge-amber">Step 2 of 2 • Open Reflection</span>
-        <h2 id="prompt-heading" class="screen-title">Leave a thought for the room</h2>
-        <p class="screen-subtitle">Your words attach to your star in the TouchDesigner constellation. Choose text or voice.</p>
+    <!-- SCREEN 2: QUESTION 2 — STAR INTENSITY (1-5 SCALE) -->
+    <section id="screen-q2-intensity" class="kiosk-screen hidden" aria-labelledby="q2-heading">
+      <div class="step-progress-wrapper">
+        <div class="step-progress-header">
+          <span class="step-progress-badge">Step 2 of 5</span>
+          <span class="step-progress-count">Question 2 of 4</span>
+        </div>
+        <div class="step-progress-bar"><div class="step-progress-fill" style="width: 40%;"></div></div>
       </div>
 
-      <!-- Rotating Single Prompt Card -->
+      <div class="question-card">
+        <div class="question-header">
+          <h2 id="q2-heading" class="question-title">How strongly are you feeling that right now?</h2>
+          <p class="question-subtitle">This guides the luminosity and brightness of your star in the space.</p>
+        </div>
+
+        <!-- Current Value Pill -->
+        <div class="scale-current-badge">
+          <div class="scale-badge-left">
+            <span id="badge-intensity-num" class="scale-val-big">3</span>
+            <span class="scale-val-total">/ 5</span>
+          </div>
+          <div style="text-align: right;">
+            <div id="badge-intensity-label" class="scale-badge-label">Moderate</div>
+            <div id="badge-intensity-sub" class="scale-badge-sub">Present and steady</div>
+          </div>
+        </div>
+
+        <!-- 1-5 Step Cards Row -->
+        <div class="scale-step-cards" id="step-cards-intensity" role="group" aria-label="Rating 1 to 5 options for feeling intensity">
+          <button type="button" class="scale-step-btn" data-val="1">
+            <span class="scale-step-num">1</span>
+            <span class="scale-step-text">Barely there</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="2">
+            <span class="scale-step-num">2</span>
+            <span class="scale-step-text">A little</span>
+          </button>
+          <button type="button" class="scale-step-btn active" data-val="3">
+            <span class="scale-step-num">3</span>
+            <span class="scale-step-text">Moderate</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="4">
+            <span class="scale-step-num">4</span>
+            <span class="scale-step-text">Quite strong</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="5">
+            <span class="scale-step-num">5</span>
+            <span class="scale-step-text">Very strong</span>
+          </button>
+        </div>
+
+        <!-- Synced Range Slider -->
+        <div class="scale-slider-row">
+          <input type="range" id="slider-intensity" class="kiosk-slider" min="1" max="5" step="1" value="3" aria-label="Feeling intensity from 1 Barely there to 5 Very strong">
+          <div class="scale-range-endpoints">
+            <span>1 • Barely there</span>
+            <span>5 • Very strong</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-actions-row">
+        <button id="btn-q2-back" class="btn btn-secondary" type="button"><span>← Back</span></button>
+        <button id="btn-q2-next" class="btn btn-primary" type="button"><span>Next: Presence &amp; Openness →</span></button>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: QUESTION 3 — SCALE & PRESENCE (1-5 SCALE) -->
+    <section id="screen-q3-openness" class="kiosk-screen hidden" aria-labelledby="q3-heading">
+      <div class="step-progress-wrapper">
+        <div class="step-progress-header">
+          <span class="step-progress-badge">Step 3 of 5</span>
+          <span class="step-progress-count">Question 3 of 4</span>
+        </div>
+        <div class="step-progress-bar"><div class="step-progress-fill" style="width: 60%;"></div></div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-header">
+          <h2 id="q3-heading" class="question-title">How open do you feel to the people around you right now?</h2>
+          <p class="question-subtitle">This shapes the size of your star and its connection lines in the space.</p>
+        </div>
+
+        <!-- Current Value Pill -->
+        <div class="scale-current-badge">
+          <div class="scale-badge-left">
+            <span id="badge-openness-num" class="scale-val-big">3</span>
+            <span class="scale-val-total">/ 5</span>
+          </div>
+          <div style="text-align: right;">
+            <div id="badge-openness-label" class="scale-badge-label">Somewhere in between</div>
+            <div id="badge-openness-sub" class="scale-badge-sub">Balanced, aware of others</div>
+          </div>
+        </div>
+
+        <!-- 1-5 Step Cards Row -->
+        <div class="scale-step-cards" id="step-cards-openness" role="group" aria-label="Rating 1 to 5 options for social openness">
+          <button type="button" class="scale-step-btn" data-val="1">
+            <span class="scale-step-num">1</span>
+            <span class="scale-step-text">Turned inward</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="2">
+            <span class="scale-step-num">2</span>
+            <span class="scale-step-text">A little busy</span>
+          </button>
+          <button type="button" class="scale-step-btn active" data-val="3">
+            <span class="scale-step-num">3</span>
+            <span class="scale-step-text">In between</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="4">
+            <span class="scale-step-num">4</span>
+            <span class="scale-step-text">Fairly open</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="5">
+            <span class="scale-step-num">5</span>
+            <span class="scale-step-text">Get amongst it!</span>
+          </button>
+        </div>
+
+        <!-- Synced Range Slider -->
+        <div class="scale-slider-row">
+          <input type="range" id="slider-openness" class="kiosk-slider" min="1" max="5" step="1" value="3" aria-label="Openness from 1 Turned inward to 5 Get amongst it">
+          <div class="scale-range-endpoints">
+            <span>1 • Turned inward</span>
+            <span>5 • Get amongst it!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-actions-row">
+        <button id="btn-q3-back" class="btn btn-secondary" type="button"><span>← Back</span></button>
+        <button id="btn-q3-next" class="btn btn-primary" type="button"><span>Next: Mind Activity →</span></button>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: QUESTION 4 — ROTATION / ORIENTATION (1-5 SCALE) -->
+    <section id="screen-q4-mind" class="kiosk-screen hidden" aria-labelledby="q4-heading">
+      <div class="step-progress-wrapper">
+        <div class="step-progress-header">
+          <span class="step-progress-badge">Step 4 of 5</span>
+          <span class="step-progress-count">Question 4 of 4</span>
+        </div>
+        <div class="step-progress-bar"><div class="step-progress-fill" style="width: 80%;"></div></div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-header">
+          <h2 id="q4-heading" class="question-title">How busy does your mind feel right now?</h2>
+          <p class="question-subtitle">This sets the gentle orbit and rotation of your star across the installation.</p>
+        </div>
+
+        <!-- Current Value Pill -->
+        <div class="scale-current-badge">
+          <div class="scale-badge-left">
+            <span id="badge-mind-num" class="scale-val-big">3</span>
+            <span class="scale-val-total">/ 5</span>
+          </div>
+          <div style="text-align: right;">
+            <div id="badge-mind-label" class="scale-badge-label">In between</div>
+            <div id="badge-mind-sub" class="scale-badge-sub">Normal study focus</div>
+          </div>
+        </div>
+
+        <!-- 1-5 Step Cards Row -->
+        <div class="scale-step-cards" id="step-cards-mind" role="group" aria-label="Rating 1 to 5 options for mind busyness">
+          <button type="button" class="scale-step-btn" data-val="1">
+            <span class="scale-step-num">1</span>
+            <span class="scale-step-text">Very quiet</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="2">
+            <span class="scale-step-num">2</span>
+            <span class="scale-step-text">Mostly quiet</span>
+          </button>
+          <button type="button" class="scale-step-btn active" data-val="3">
+            <span class="scale-step-num">3</span>
+            <span class="scale-step-text">In between</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="4">
+            <span class="scale-step-num">4</span>
+            <span class="scale-step-text">Quite busy</span>
+          </button>
+          <button type="button" class="scale-step-btn" data-val="5">
+            <span class="scale-step-num">5</span>
+            <span class="scale-step-text">Racing</span>
+          </button>
+        </div>
+
+        <!-- Synced Range Slider -->
+        <div class="scale-slider-row">
+          <input type="range" id="slider-mind" class="kiosk-slider" min="1" max="5" step="1" value="3" aria-label="Mind activity from 1 Very quiet to 5 Racing">
+          <div class="scale-range-endpoints">
+            <span>1 • Very quiet</span>
+            <span>5 • Racing</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-actions-row">
+        <button id="btn-q4-back" class="btn btn-secondary" type="button"><span>← Back</span></button>
+        <button id="btn-q4-next" class="btn btn-primary" type="button"><span>Continue to Reflection →</span></button>
+      </div>
+    </section>
+
+    <!-- SCREEN 5: OPEN-ENDED RESPONSE (ROTATING PROMPT, CONSENT, DUAL INPUT, CHOICE TO SKIP) -->
+    <section id="screen-open-ended" class="kiosk-screen hidden" aria-labelledby="prompt-heading">
+      <div class="step-progress-wrapper">
+        <div class="step-progress-header">
+          <span class="step-progress-badge">Step 5 of 5</span>
+          <span class="step-progress-count">Optional Reflection</span>
+        </div>
+        <div class="step-progress-bar"><div class="step-progress-fill" style="width: 100%;"></div></div>
+      </div>
+
+      <div class="screen-header-block">
+        <h2 id="prompt-heading" class="screen-title">Leave a thought for the room</h2>
+        <p class="screen-subtitle">Your words attach to your star in the TouchDesigner constellation. Choose text, voice, or skip.</p>
+      </div>
+
+      <!-- Short Consent Notice (Mandatory from To change.md) -->
+      <div class="consent-notice-box" role="region" aria-label="Privacy and consent information">
+        <span class="consent-icon" aria-hidden="true">🔒</span>
+        <div class="consent-content">
+          <div class="consent-title">Consent &amp; Privacy Notice</div>
+          <p class="consent-text">
+            By sharing your reflection, you agree that your anonymous words or voice recording may be softly projected in the library installation. No names, student IDs, or personal identifiers are ever collected or stored.
+          </p>
+        </div>
+      </div>
+
+      <!-- Rotating Prompt Card -->
       <div class="prompt-card" id="prompt-card">
         <div class="prompt-card-header">
-          <span id="prompt-tag" class="prompt-tag">💬 Words of Warmth</span>
+          <span id="prompt-tag" class="prompt-tag">💬 Shared Experience</span>
           <button id="btn-cycle-prompt" class="btn-cycle" type="button" aria-label="Cycle another prompt question">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
@@ -257,7 +422,10 @@
           </button>
         </div>
         <p id="prompt-question" class="prompt-question-text">
-          If you could share a single word of encouragement with someone else walking through this space today, what would it be?
+          If someone else in the library was feeling the exact same way, what would you want them to hear?
+        </p>
+        <p id="prompt-guidance" class="prompt-guidance-text">
+          You can share a thought, a piece of advice, reassurance, or something you wish someone told you today.
         </p>
       </div>
 
@@ -285,7 +453,7 @@
             id="reflection-text-input" 
             class="reflection-textarea" 
             maxlength="300" 
-            placeholder="Type your word of encouragement or quiet thought here (anonymous &amp; safe)..."
+            placeholder="Type your reassurance or quiet thought here (anonymous &amp; safe)..."
             aria-label="Reflection text input capped at 300 characters"
           ></textarea>
           <div class="text-meta-row">
@@ -314,7 +482,7 @@
             </svg>
           </button>
 
-          <!-- Stop Recording Button (Active while recording) -->
+          <!-- Stop Recording Button -->
           <button id="btn-stop-record" class="btn-record-stop hidden" type="button" aria-label="Stop audio recording">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
               <rect x="5" y="5" width="14" height="14" rx="2" />
@@ -327,7 +495,7 @@
             <span>Recording voice... Auto-stops at 30 seconds</span>
           </div>
 
-          <!-- Playback Preview Container (Active after recording) -->
+          <!-- Playback Preview Container -->
           <div id="audio-playback-container" class="audio-playback-container hidden">
             <span id="audio-recorded-duration" class="audio-duration-badge">0.0s recorded</span>
             <audio id="audio-playback-player" class="audio-playback-player" controls preload="metadata"></audio>
@@ -344,36 +512,54 @@
         </div>
       </div>
 
-      <!-- Navigation Row -->
-      <div class="nav-actions-row">
-        <button id="btn-back-to-scales" class="btn btn-secondary" type="button">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-          <span>Back to Scales</span>
-        </button>
+      <!-- Action Cluster: Primary Submit + Choice to Not Submit (From To change.md) -->
+      <div class="open-actions-cluster">
+        <div class="open-actions-primary-row">
+          <button id="btn-back-to-scales" class="btn btn-secondary" type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back</span>
+          </button>
 
-        <button id="btn-submit-reflection" class="btn btn-primary btn-large btn-pulse" type="button">
-          <span>Light My Star in the Constellation ✨</span>
-        </button>
+          <button id="btn-submit-reflection" class="btn btn-primary btn-large btn-pulse" type="button">
+            <span>Light My Star With Reflection ✨</span>
+          </button>
+        </div>
+
+        <!-- Choice to Not Submit (Mandatory from To change.md) -->
+        <div style="text-align: center; margin-top: 0.5rem;">
+          <button id="btn-skip-reflection" class="btn btn-skip-reflection" type="button">
+            <span>Skip reflection &amp; light star without words</span>
+          </button>
+        </div>
       </div>
     </section>
 
-    <!-- SCREEN 4: GENERATIVE STAR CREATED / CONFIRMATION -->
+    <!-- SCREEN 6: STAR CONFIRMATION & SUPPORT SERVICES (Mandatory from To change.md) -->
     <section id="screen-success" class="kiosk-screen hidden" aria-labelledby="success-heading">
       <div class="success-card glass-panel">
         
-        <!-- Live Generated Star Visual -->
+        <!-- Live Generated Star Visual (Driven by TouchDesigner parameters) -->
         <div class="star-preview-chamber">
           <div id="success-star-aura" class="star-preview-aura"></div>
+          <div id="success-star-orbit" class="star-preview-orbit-ring"></div>
           <div id="success-star-visual" class="star-preview-core"></div>
         </div>
 
-        <h2 id="success-heading" class="screen-title">Your star has lit up in the library.</h2>
+        <h2 id="success-heading" class="screen-title">Your star is glowing in the library.</h2>
         <p class="screen-subtitle">
-          Thank you for sharing this quiet moment. Your reflection is now weaving into the Swanston Library constellation projection beside this booth.
+          Thank you for sharing this quiet moment. Your reflection is now softly woven into the Swanston Library constellation projection.
         </p>
+
+        <!-- Summary Pills of Student's Check-in -->
+        <div class="checkin-summary-row" id="checkin-summary-row">
+          <span class="summary-pill" id="sum-feeling">Calm</span>
+          <span class="summary-pill" id="sum-intensity">Moderate intensity</span>
+          <span class="summary-pill" id="sum-openness">Fairly open</span>
+          <span class="summary-pill" id="sum-mind">Mostly quiet</span>
+        </div>
 
         <!-- TouchDesigner Flat Parameter Values Breakdown -->
         <div class="td-parameters-card">
@@ -383,32 +569,84 @@
           </div>
           <div class="td-param-grid">
             <div class="td-param-item">
-              <span class="td-param-label">Star Luminosity (Empathy)</span>
-              <span id="param-star-brightness" class="td-param-value">75%</span>
+              <span class="td-param-label">Star Color (Emotion)</span>
+              <span id="param-star-color" class="td-param-value">Sage Aurora</span>
             </div>
             <div class="td-param-item">
-              <span class="td-param-label">Color Hue (Social Energy)</span>
-              <span id="param-star-hue" class="td-param-value">Hue 190°</span>
+              <span class="td-param-label">Star Luminosity (Intensity)</span>
+              <span id="param-star-brightness" class="td-param-value">60%</span>
             </div>
             <div class="td-param-item">
-              <span class="td-param-label">Line Thickness (Connectedness)</span>
-              <span id="param-line-thickness" class="td-param-value">3.2 px</span>
+              <span class="td-param-label">Scale &amp; Lines (Presence)</span>
+              <span id="param-line-thickness" class="td-param-value">3.5 px</span>
             </div>
             <div class="td-param-item">
-              <span class="td-param-label">Pulse Rate</span>
-              <span id="param-pulse-rate" class="td-param-value">1.10 Hz</span>
+              <span class="td-param-label">Rotation &amp; Orbit (Mind)</span>
+              <span id="param-rotation-speed" class="td-param-value">25.0 °/s</span>
             </div>
           </div>
         </div>
 
-        <div class="success-actions">
+        <!-- Support Links Section (Mandatory from To change.md: RMIT Counselling & Headspace) -->
+        <div class="support-services-container" role="region" aria-label="Student wellbeing and support resources">
+          <div class="support-services-header">
+            <span aria-hidden="true" style="font-size: 1.3rem;">💙</span>
+            <h3>Support is always here for you</h3>
+          </div>
+          <p class="support-services-intro">
+            University life can be demanding. If you ever feel overwhelmed or need someone to listen, free and confidential support is available on campus and online:
+          </p>
+
+          <div class="support-cards-list">
+            <!-- RMIT Counselling -->
+            <div class="support-card-item">
+              <div class="support-card-info">
+                <div class="support-card-name">🎓 RMIT Counselling and Psychological Services</div>
+                <div class="support-card-desc">Free, confidential counselling &amp; mental wellbeing appointments for RMIT students.</div>
+                <div class="support-card-hours">Mon–Fri: 9am–5pm • After Hours Crisis: 1300 305 737 (Text: 0488 884 165)</div>
+              </div>
+              <a href="tel:0399255000" class="support-call-btn" aria-label="Call RMIT Counselling on 03 9925 5000">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span>03 9925 5000</span>
+              </a>
+            </div>
+
+            <!-- Headspace -->
+            <div class="support-card-item">
+              <div class="support-card-info">
+                <div class="support-card-name">🌱 Headspace (Youth Mental Health)</div>
+                <div class="support-card-desc">Free support, web chat &amp; resources for young adults aged 12–25.</div>
+                <div class="support-card-hours">9am – 1am AEDT daily • headspace.org.au</div>
+              </div>
+              <a href="tel:1800650890" class="support-call-btn" aria-label="Call Headspace on 1800 650 890">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span>1800 650 890</span>
+              </a>
+            </div>
+
+            <!-- Lifeline (24/7) -->
+            <div class="support-card-item">
+              <div class="support-card-info">
+                <div class="support-card-name">💙 Lifeline Crisis Support</div>
+                <div class="support-card-desc">24/7 immediate crisis support and compassionate suicide prevention.</div>
+                <div class="support-card-hours">Available 24 hours / 7 days a week</div>
+              </div>
+              <a href="tel:131114" class="support-call-btn" aria-label="Call Lifeline on 13 11 14">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span>13 11 14</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="success-actions" style="margin-top: 1.25rem;">
           <button id="btn-reset-done" class="btn btn-primary" type="button">
             <span>Done / Return Home</span>
           </button>
         </div>
 
         <p class="success-countdown-pill">
-          Kiosk will reset automatically in <strong id="success-autoreset-timer">15</strong>s for the next student.
+          Kiosk will reset automatically in <strong id="success-autoreset-timer">20</strong>s for the next student.
         </p>
       </div>
     </section>
@@ -435,7 +673,7 @@
         <h3 id="idle-title" class="modal-title">Still with us?</h3>
       </div>
       <p class="screen-subtitle" style="margin-bottom: 1.5rem;">
-        To protect your privacy in the library, this kiosk will gently reset in <strong id="idle-countdown-seconds" style="color: var(--accent-amber); font-size: 1.3rem;">15</strong> seconds if untouched.
+        To protect your privacy in the library, this kiosk will gently reset in <strong id="idle-countdown-seconds" style="color: var(--accent-lime); font-size: 1.3rem;">15</strong> seconds if untouched.
       </p>
       <div class="nav-actions-row">
         <button id="btn-reset-now" class="btn btn-secondary" type="button">Reset Now</button>
@@ -457,11 +695,11 @@
       <!-- Supabase Configuration -->
       <div class="dev-field">
         <label for="cfg-supabase-url" class="dev-label">Supabase Project URL</label>
-        <input type="text" id="cfg-supabase-url" class="dev-input" placeholder="https://xyzcompany.supabase.co">
+        <input type="text" id="cfg-supabase-url" class="dev-input" placeholder="https://viwuibpyqwlpztencstv.supabase.co">
       </div>
       <div class="dev-field">
         <label for="cfg-supabase-key" class="dev-label">Supabase Anon Key</label>
-        <input type="password" id="cfg-supabase-key" class="dev-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+        <input type="password" id="cfg-supabase-key" class="dev-input" placeholder="sb_publishable_...">
       </div>
 
       <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem;">

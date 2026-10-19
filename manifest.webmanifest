@@ -1,13 +1,13 @@
 {
-  "name": "Libraries Against Loneliness • Reflect & Connect",
-  "short_name": "Reflect & Connect",
+  "name": "CONSTELLATE • Libraries Against Loneliness",
+  "short_name": "CONSTELLATE",
   "description": "Interactive RMIT Swanston Library installation kiosk connecting student wellbeing with generative TouchDesigner constellation visuals.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0B0F19",
-  "theme_color": "#0B0F19",
+  "background_color": "#102D37",
+  "theme_color": "#102D37",
   "categories": ["education", "wellbeing", "lifestyle"],
   "icons": [
     {

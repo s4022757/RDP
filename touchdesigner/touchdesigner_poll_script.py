@@ -2,13 +2,12 @@
 TouchDesigner Python Integration Script
 Project: Libraries Against Loneliness • Reflect & Connect
 Site: RMIT Swanston Library Level 6 Wellbeing Installation
-
-How to use in TouchDesigner:
-1. Place a Table DAT in your network named 'table_reflections'.
-2. Place a Text DAT or Execute DAT with this script.
-3. Configure your SUPABASE_URL and SUPABASE_ANON_KEY below.
-4. Set Execute DAT 'Timer' or 'Frame End' to poll every 1-2 seconds,
-   or trigger on demand when the kiosk signals a new reflection.
+Updated for "To change.md" guidelines:
+- Emotion / Feeling (Word + Icon, Not Color Alone)
+- Q2: Star Intensity (1-5) -> Brightness
+- Q3: Openness (1-5) -> Scale & Line Thickness
+- Q4: Mind Busyness (1-5) -> Rotation Speed & Orientation
+- Optional Response / Skip support
 """
 
 import urllib.request
@@ -16,8 +15,8 @@ import json
 import time
 
 # --- CONFIGURATION ---
-SUPABASE_URL = "https://your-project.supabase.co" # Replace with your Supabase URL
-SUPABASE_ANON_KEY = "your-anon-key"               # Replace with your Supabase Anon Key
+SUPABASE_URL = "https://viwuibpyqwlpztencstv.supabase.co" # Configured Supabase project
+SUPABASE_ANON_KEY = "sb_publishable_xzr4AYx0vHpicyRGNzTZ9Q_kkf1vfLH"
 TABLE_NAME = "reflections"
 FETCH_LIMIT = 20
 
@@ -59,24 +58,23 @@ def update_touchdesigner_table(records):
     Populates an existing TouchDesigner Table DAT ('table_reflections')
     with flat parameters for direct CHOP/SOP referencing.
     """
-    # Check if table_reflections DAT exists in TouchDesigner
     try:
         table_dat = op('table_reflections')
     except NameError:
-        # Running outside TouchDesigner test environment
         table_dat = None
 
     if not table_dat:
-        # If running outside TD or DAT not found, print sample
         return
 
     # Clear and set column headers matching our flat JSON keys
     columns = [
-        "id", "timestamp", "score_connectedness", "score_social_energy", 
-        "score_collective_empathy", "response_type", "response_text",
-        "td_star_brightness", "td_pulse_rate_hz", "td_color_hue",
-        "td_color_r", "td_color_g", "td_color_b",
-        "td_line_thickness", "td_connection_distance", "td_star_scale"
+        "id", "timestamp", "feeling_id", "feeling_label",
+        "score_intensity", "score_openness", "score_mind_busyness",
+        "response_type", "response_text",
+        "td_star_color", "td_star_brightness", "td_star_scale",
+        "td_color_hue", "td_color_r", "td_color_g", "td_color_b",
+        "td_line_thickness", "td_connection_distance",
+        "td_rotation_speed", "td_rotation_angle", "td_pulse_rate_hz"
     ]
     
     table_dat.clear()
@@ -86,36 +84,42 @@ def update_touchdesigner_table(records):
         row = [
             str(item.get("id", "")),
             str(item.get("timestamp", "")),
-            str(item.get("score_connectedness", 5)),
-            str(item.get("score_social_energy", 5)),
-            str(item.get("score_collective_empathy", 5)),
+            str(item.get("feeling_id", "calm")),
+            str(item.get("feeling_label", "Calm")),
+            str(item.get("score_intensity", 3)),
+            str(item.get("score_openness", 3)),
+            str(item.get("score_mind_busyness", 3)),
             str(item.get("response_type", "text")),
             str(item.get("response_text", "")),
-            str(item.get("td_star_brightness", 0.5)),
-            str(item.get("td_pulse_rate_hz", 1.0)),
-            str(item.get("td_color_hue", 0.5)),
-            str(item.get("td_color_r", 0.5)),
-            str(item.get("td_color_g", 0.5)),
-            str(item.get("td_color_b", 0.5)),
-            str(item.get("td_line_thickness", 2.0)),
+            str(item.get("td_star_color", "calm")),
+            str(item.get("td_star_brightness", 0.6)),
+            str(item.get("td_star_scale", 1.2)),
+            str(item.get("td_color_hue", 0.48)),
+            str(item.get("td_color_r", 0.18)),
+            str(item.get("td_color_g", 0.83)),
+            str(item.get("td_color_b", 0.75)),
+            str(item.get("td_line_thickness", 3.0)),
             str(item.get("td_connection_distance", 150)),
-            str(item.get("td_star_scale", 1.0))
+            str(item.get("td_rotation_speed", 25.0)),
+            str(item.get("td_rotation_angle", 0.0)),
+            str(item.get("td_pulse_rate_hz", 1.0))
         ]
         table_dat.appendRow(row)
 
 def trigger_new_star_event(record):
     """
     Called when a brand new reflection has just arrived.
-    Can trigger an animation pulse, particle burst, or sound cue in TouchDesigner.
+    Fires visual burst and sound cues in TouchDesigner.
     """
     star_id = record.get("id")
-    brightness = record.get("td_star_brightness", 1.0)
-    rgb = (record.get("td_color_r", 1.0), record.get("td_color_g", 1.0), record.get("td_color_b", 1.0))
-    line_thickness = record.get("td_line_thickness", 2.0)
+    feeling = record.get("feeling_label", "Calm")
+    brightness = record.get("td_star_brightness", 0.6)
+    scale = record.get("td_star_scale", 1.0)
+    rot_speed = record.get("td_rotation_speed", 25.0)
+    rgb = (record.get("td_color_r", 0.5), record.get("td_color_g", 0.5), record.get("td_color_b", 0.5))
     
-    print(f"✨ [New Star Formed] ID: {star_id} | Brightness: {brightness} | RGB: {rgb} | Line: {line_thickness}")
+    print(f"✨ [New Star Formed] ID: {star_id} | Emotion: {feeling} | Brightness: {brightness} | Scale: {scale} | Rot: {rot_speed} deg/s | RGB: {rgb}")
     
-    # Example: Fire a pulse parameter on a trigger CHOP
     try:
         trigger_chop = op('trigger_new_star')
         if trigger_chop:
@@ -139,12 +143,10 @@ def onFrame():
         rec_id = rec.get("id")
         if rec_id and rec_id not in seen_ids:
             seen_ids.add(rec_id)
-            # Only trigger visual pulse if we've already done initial fetch
             if len(seen_ids) > len(records):
                 trigger_new_star_event(rec)
 
 if __name__ == "__main__":
-    # Test execution outside TouchDesigner
     print("Testing TouchDesigner polling handler...")
     data = fetch_recent_reflections()
     print(f"Fetched {len(data)} records.")

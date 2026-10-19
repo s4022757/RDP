@@ -1,69 +1,92 @@
 /**
  * Libraries Against Loneliness • Main Kiosk Application Controller
- * Handles UI state transitions, live background constellation canvas,
- * scale interactions, rotating prompt bank, audio/text submission,
- * TouchDesigner parameter previews, and kiosk idle timeout reset.
+ * Handles 1-question-per-screen flow, feeling selection, 1-5 scales,
+ * rotating prompt bank, audio/text submission, skip option, support links,
+ * live constellation background canvas, and kiosk idle timeout reset.
+ * Adheres to guidance in "To change.md".
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   // --- APPLICATION STATE ---
   const state = {
-    currentScreen: 'screen-welcome', // 'screen-welcome' | 'screen-scales' | 'screen-open-ended' | 'screen-success'
-    scores: {
-      connectedness: 5,
-      socialEnergy: 5,
-      collectiveEmpathy: 6
-    },
+    currentScreen: 'screen-welcome',
+    // 4 Questions Data
+    feeling: 'calm',
+    intensity: 3,
+    openness: 3,
+    mindBusyness: 3,
+
+    // Open reflection
     activePromptIndex: 0,
     inputMode: 'text', // 'text' | 'audio'
     responseText: '',
-    audioData: null, // { blob, base64, duration, mimeType }
+    audioData: null,
     lastSubmittedRecord: null,
+
+    // Idle management
     isIdleModalActive: false,
     idleTimer: null,
     idleCountdownTimer: null,
-    idleSecondsRemaining: 15
+    idleSecondsRemaining: 15,
+    successResetInterval: null
   };
 
   // --- DOM ELEMENT REFERENCES ---
   const screens = {
     welcome: document.getElementById('screen-welcome'),
-    scales: document.getElementById('screen-scales'),
+    q1Feeling: document.getElementById('screen-q1-feeling'),
+    q2Intensity: document.getElementById('screen-q2-intensity'),
+    q3Openness: document.getElementById('screen-q3-openness'),
+    q4Mind: document.getElementById('screen-q4-mind'),
     openEnded: document.getElementById('screen-open-ended'),
     success: document.getElementById('screen-success')
   };
 
-  // Scale elements
-  const sliders = {
-    connectedness: document.getElementById('slider-connectedness'),
-    socialEnergy: document.getElementById('slider-social-energy'),
-    collectiveEmpathy: document.getElementById('slider-collective-empathy')
-  };
+  // Q1 Feeling elements
+  const feelingCards = document.querySelectorAll('.feeling-card');
+  const btnQ1Back = document.getElementById('btn-q1-back');
+  const btnQ1Next = document.getElementById('btn-q1-next');
 
-  const scaleValueBadges = {
-    connectedness: document.getElementById('val-connectedness'),
-    socialEnergy: document.getElementById('val-social-energy'),
-    collectiveEmpathy: document.getElementById('val-collective-empathy')
-  };
+  // Q2 Intensity elements
+  const sliderIntensity = document.getElementById('slider-intensity');
+  const stepCardsIntensity = document.querySelectorAll('#step-cards-intensity .scale-step-btn');
+  const badgeIntensityNum = document.getElementById('badge-intensity-num');
+  const badgeIntensityLabel = document.getElementById('badge-intensity-label');
+  const badgeIntensitySub = document.getElementById('badge-intensity-sub');
+  const btnQ2Back = document.getElementById('btn-q2-back');
+  const btnQ2Next = document.getElementById('btn-q2-next');
 
-  const pillContainers = {
-    connectedness: document.getElementById('pills-connectedness'),
-    socialEnergy: document.getElementById('pills-social-energy'),
-    collectiveEmpathy: document.getElementById('pills-collective-empathy')
-  };
+  // Q3 Openness elements
+  const sliderOpenness = document.getElementById('slider-openness');
+  const stepCardsOpenness = document.querySelectorAll('#step-cards-openness .scale-step-btn');
+  const badgeOpennessNum = document.getElementById('badge-openness-num');
+  const badgeOpennessLabel = document.getElementById('badge-openness-label');
+  const badgeOpennessSub = document.getElementById('badge-openness-sub');
+  const btnQ3Back = document.getElementById('btn-q3-back');
+  const btnQ3Next = document.getElementById('btn-q3-next');
+
+  // Q4 Mind elements
+  const sliderMind = document.getElementById('slider-mind');
+  const stepCardsMind = document.querySelectorAll('#step-cards-mind .scale-step-btn');
+  const badgeMindNum = document.getElementById('badge-mind-num');
+  const badgeMindLabel = document.getElementById('badge-mind-label');
+  const badgeMindSub = document.getElementById('badge-mind-sub');
+  const btnQ4Back = document.getElementById('btn-q4-back');
+  const btnQ4Next = document.getElementById('btn-q4-next');
 
   // Open-ended prompt elements
   const promptCard = document.getElementById('prompt-card');
   const promptQuestionEl = document.getElementById('prompt-question');
+  const promptGuidanceEl = document.getElementById('prompt-guidance');
   const promptTagEl = document.getElementById('prompt-tag');
   const cyclePromptBtn = document.getElementById('btn-cycle-prompt');
-  
+
   // Input mode tabs & panels
   const tabText = document.getElementById('tab-mode-text');
   const tabAudio = document.getElementById('tab-mode-audio');
   const panelText = document.getElementById('panel-mode-text');
   const panelAudio = document.getElementById('panel-mode-audio');
-  
+
   // Text input elements
   const textInput = document.getElementById('reflection-text-input');
   const charCounter = document.getElementById('text-char-counter');
@@ -80,20 +103,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const audioDurationBadge = document.getElementById('audio-recorded-duration');
   const audioErrorMessage = document.getElementById('audio-error-message');
 
-  // Navigation & Action buttons
+  // Actions
   const btnBegin = document.getElementById('btn-begin-reflection');
-  const btnToOpenEnded = document.getElementById('btn-to-open-ended');
   const btnBackToScales = document.getElementById('btn-back-to-scales');
   const btnSubmitReflection = document.getElementById('btn-submit-reflection');
+  const btnSkipReflection = document.getElementById('btn-skip-reflection');
   const btnResetDone = document.getElementById('btn-reset-done');
 
   // Success screen elements
   const successStarVisual = document.getElementById('success-star-visual');
   const successStarAura = document.getElementById('success-star-aura');
-  const successParamBrightness = document.getElementById('param-star-brightness');
-  const successParamHue = document.getElementById('param-star-hue');
-  const successParamLine = document.getElementById('param-line-thickness');
-  const successParamPulse = document.getElementById('param-pulse-rate');
+  const successStarOrbit = document.getElementById('success-star-orbit');
+  const paramStarColor = document.getElementById('param-star-color');
+  const paramStarBrightness = document.getElementById('param-star-brightness');
+  const paramLineThickness = document.getElementById('param-line-thickness');
+  const paramRotationSpeed = document.getElementById('param-rotation-speed');
+  const sumFeeling = document.getElementById('sum-feeling');
+  const sumIntensity = document.getElementById('sum-intensity');
+  const sumOpenness = document.getElementById('sum-openness');
+  const sumMind = document.getElementById('sum-mind');
   const successAutoResetTimer = document.getElementById('success-autoreset-timer');
 
   // Top bar & utility buttons
@@ -130,11 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     onTick: ({ elapsed, remaining, max }) => {
       const elSec = Math.floor(elapsed);
-      const remSec = Math.ceil(remaining);
       const strElapsed = `00:${elSec < 10 ? '0' : ''}${elSec}`;
       const strMax = `00:${max}`;
       audioTimerDisplay.textContent = `${strElapsed} / ${strMax}`;
-
       if (remaining <= 5) {
         audioTimerDisplay.classList.add('timer-warning');
       } else {
@@ -158,91 +184,109 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- 1. SCALE QUESTIONS INITIALIZATION ---
-  function initScales() {
-    ['connectedness', 'socialEnergy', 'collectiveEmpathy'].forEach((scaleKey) => {
-      const slider = sliders[scaleKey];
-      const badge = scaleValueBadges[scaleKey];
-      const pillsContainer = pillContainers[scaleKey];
-
-      // Populate 1-10 clickable pills for accessible touch kiosk interaction
-      if (pillsContainer) {
-        pillsContainer.innerHTML = '';
-        for (let i = 1; i <= 10; i++) {
-          const pill = document.createElement('button');
-          pill.type = 'button';
-          pill.className = `scale-pill ${i === state.scores[scaleKey] ? 'active' : ''}`;
-          pill.textContent = i;
-          pill.setAttribute('aria-label', `Rate ${i} out of 10`);
-          pill.addEventListener('click', () => {
-            updateScaleValue(scaleKey, i);
-            if (window.soundEngine) window.soundEngine.playSliderTick(i);
-          });
-          pillsContainer.appendChild(pill);
-        }
-      }
-
-      // Slider drag / input event
-      if (slider) {
-        slider.value = state.scores[scaleKey];
-        slider.addEventListener('input', (e) => {
-          const val = parseInt(e.target.value, 10);
-          updateScaleValue(scaleKey, val);
-        });
-        slider.addEventListener('change', (e) => {
-          const val = parseInt(e.target.value, 10);
-          if (window.soundEngine) window.soundEngine.playSliderTick(val);
-        });
-      }
-
-      if (badge) {
-        badge.textContent = state.scores[scaleKey];
-      }
+  // --- 1. QUESTION 1: FEELING SELECTION ---
+  function initFeelingSelection() {
+    feelingCards.forEach((card) => {
+      card.addEventListener('click', () => {
+        const feelingId = card.getAttribute('data-feeling');
+        selectFeeling(feelingId);
+        if (window.soundEngine) window.soundEngine.playPromptSwitch();
+      });
     });
-
-    updateSliderGradients();
   }
 
-  function updateScaleValue(scaleKey, val) {
-    state.scores[scaleKey] = val;
-    if (sliders[scaleKey]) sliders[scaleKey].value = val;
-    if (scaleValueBadges[scaleKey]) scaleValueBadges[scaleKey].textContent = val;
-
-    // Update active pill
-    if (pillContainers[scaleKey]) {
-      const pills = pillContainers[scaleKey].querySelectorAll('.scale-pill');
-      pills.forEach((p, idx) => {
-        p.classList.toggle('active', (idx + 1) === val);
-      });
-    }
-
-    updateSliderGradients();
+  function selectFeeling(feelingId) {
+    state.feeling = feelingId;
+    feelingCards.forEach((c) => {
+      const isSelected = c.getAttribute('data-feeling') === feelingId;
+      c.classList.toggle('selected', isSelected);
+      c.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+    });
     updateTouchDesignerLivePreview();
   }
 
-  function updateSliderGradients() {
-    // Dynamic fill for sliders
-    ['connectedness', 'socialEnergy', 'collectiveEmpathy'].forEach((scaleKey) => {
-      const slider = sliders[scaleKey];
-      if (!slider) return;
-      const val = state.scores[scaleKey];
-      const percent = ((val - 1) / 9) * 100;
-      
-      let startColor = '#6366F1';
-      let endColor = '#38BDF8';
-      if (scaleKey === 'socialEnergy') {
-        startColor = '#818CF8';
-        endColor = '#FB923C';
-      } else if (scaleKey === 'collectiveEmpathy') {
-        startColor = '#2DD4BF';
-        endColor = '#FBBF24';
-      }
+  // --- 2. QUESTIONS 2-4: 1-5 SCALES INITIALIZATION ---
+  function initScales() {
+    // Setup Q2: Intensity
+    setupScale({
+      key: 'intensity',
+      slider: sliderIntensity,
+      cards: stepCardsIntensity,
+      badgeNum: badgeIntensityNum,
+      badgeLabel: badgeIntensityLabel,
+      badgeSub: badgeIntensitySub,
+      config: KIOSK_CONFIG.intensityScale
+    });
 
-      slider.style.background = `linear-gradient(to right, ${startColor} 0%, ${endColor} ${percent}%, rgba(255, 255, 255, 0.12) ${percent}%, rgba(255, 255, 255, 0.12) 100%)`;
+    // Setup Q3: Openness
+    setupScale({
+      key: 'openness',
+      slider: sliderOpenness,
+      cards: stepCardsOpenness,
+      badgeNum: badgeOpennessNum,
+      badgeLabel: badgeOpennessLabel,
+      badgeSub: badgeOpennessSub,
+      config: KIOSK_CONFIG.opennessScale
+    });
+
+    // Setup Q4: Mind Busyness
+    setupScale({
+      key: 'mindBusyness',
+      slider: sliderMind,
+      cards: stepCardsMind,
+      badgeNum: badgeMindNum,
+      badgeLabel: badgeMindLabel,
+      badgeSub: badgeMindSub,
+      config: KIOSK_CONFIG.mindScale
     });
   }
 
-  // --- 2. OPEN-ENDED PROMPT ROTATION & INPUT MODES ---
+  function setupScale({ key, slider, cards, badgeNum, badgeLabel, badgeSub, config }) {
+    const updateUI = (val) => {
+      state[key] = val;
+      if (slider) {
+        slider.value = val;
+        const percent = ((val - 1) / 4) * 100;
+        slider.style.background = `linear-gradient(to right, #528B90 0%, #D2F7F9 ${percent / 2}%, #ECF8C0 ${percent}%, rgba(255, 255, 255, 0.12) ${percent}%, rgba(255, 255, 255, 0.12) 100%)`;
+      }
+      if (cards) {
+        cards.forEach((btn) => {
+          const btnVal = parseInt(btn.getAttribute('data-val'), 10);
+          btn.classList.toggle('active', btnVal === val);
+        });
+      }
+      const step = config.steps.find((s) => s.val === val) || config.steps[2];
+      if (badgeNum) badgeNum.textContent = val;
+      if (badgeLabel) badgeLabel.textContent = step.label;
+      if (badgeSub) badgeSub.textContent = step.sub;
+
+      updateTouchDesignerLivePreview();
+    };
+
+    if (slider) {
+      slider.addEventListener('input', (e) => {
+        updateUI(parseInt(e.target.value, 10));
+      });
+      slider.addEventListener('change', (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (window.soundEngine) window.soundEngine.playSliderTick(val * 2);
+      });
+    }
+
+    if (cards) {
+      cards.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const val = parseInt(btn.getAttribute('data-val'), 10);
+          updateUI(val);
+          if (window.soundEngine) window.soundEngine.playSliderTick(val * 2);
+        });
+      });
+    }
+
+    updateUI(state[key]);
+  }
+
+  // --- 3. OPEN-ENDED PROMPT ROTATION & DUAL INPUT MODES ---
   function initPromptBank() {
     renderCurrentPrompt();
 
@@ -251,10 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
         state.activePromptIndex = (state.activePromptIndex + 1) % KIOSK_CONFIG.prompts.length;
         renderCurrentPrompt();
         if (window.soundEngine) window.soundEngine.playPromptSwitch();
-        // Gentle card flip / pulse animation
         if (promptCard) {
           promptCard.classList.remove('prompt-pulse');
-          void promptCard.offsetWidth; // trigger reflow
+          void promptCard.offsetWidth;
           promptCard.classList.add('prompt-pulse');
         }
       });
@@ -264,15 +307,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderCurrentPrompt() {
     const prompt = KIOSK_CONFIG.prompts[state.activePromptIndex];
     if (promptQuestionEl) promptQuestionEl.textContent = prompt.text;
+    if (promptGuidanceEl) promptGuidanceEl.textContent = prompt.subtext || '';
     if (promptTagEl) promptTagEl.textContent = `${prompt.icon} ${prompt.tag}`;
   }
 
   function initInputModes() {
-    // Tab switching
     tabText.addEventListener('click', () => switchInputMode('text'));
     tabAudio.addEventListener('click', () => switchInputMode('audio'));
 
-    // Textarea character counter (strictly max 300)
     if (textInput) {
       textInput.addEventListener('input', (e) => {
         let val = e.target.value;
@@ -283,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
         state.responseText = val;
         const count = val.length;
         charCounter.textContent = `${count} / ${KIOSK_CONFIG.maxTextChars}`;
-
         if (count >= KIOSK_CONFIG.maxTextChars - 20) {
           charCounter.classList.add('char-limit-near');
         } else {
@@ -292,7 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Audio recording button events
     if (btnStartRecord) {
       btnStartRecord.addEventListener('click', () => {
         if (audioErrorMessage) audioErrorMessage.classList.add('hidden');
@@ -332,7 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateAudioUIState(recState) {
-    // idle | recording | recorded | error
     if (btnStartRecord) btnStartRecord.classList.toggle('hidden', recState !== 'idle');
     if (btnStopRecord) btnStopRecord.classList.toggle('hidden', recState !== 'recording');
     if (audioRecordingIndicator) audioRecordingIndicator.classList.toggle('hidden', recState !== 'recording');
@@ -348,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- 3. STATE & SCREEN NAVIGATION ---
+  // --- 4. STEP NAVIGATION ---
   function goToScreen(screenId) {
     state.currentScreen = screenId;
     Object.keys(screens).forEach((key) => {
@@ -364,96 +403,117 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Reset scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // When on scales or open-ended, update live TouchDesigner preview
     updateTouchDesignerLivePreview();
   }
 
-  // Navigation handlers
+  // Navigation Event Listeners (One question per screen)
   btnBegin.addEventListener('click', () => {
-    // Initialize procedural audio context on first user interaction
     if (window.soundEngine) window.soundEngine.init();
-    goToScreen('screen-scales');
+    goToScreen('screen-q1-feeling');
   });
 
-  btnToOpenEnded.addEventListener('click', () => {
+  // Q1 Navigation
+  btnQ1Back.addEventListener('click', () => goToScreen('screen-welcome'));
+  btnQ1Next.addEventListener('click', () => {
+    if (window.soundEngine) window.soundEngine.playPromptSwitch();
+    goToScreen('screen-q2-intensity');
+  });
+
+  // Q2 Navigation
+  btnQ2Back.addEventListener('click', () => goToScreen('screen-q1-feeling'));
+  btnQ2Next.addEventListener('click', () => {
+    if (window.soundEngine) window.soundEngine.playPromptSwitch();
+    goToScreen('screen-q3-openness');
+  });
+
+  // Q3 Navigation
+  btnQ3Back.addEventListener('click', () => goToScreen('screen-q2-intensity'));
+  btnQ3Next.addEventListener('click', () => {
+    if (window.soundEngine) window.soundEngine.playPromptSwitch();
+    goToScreen('screen-q4-mind');
+  });
+
+  // Q4 Navigation
+  btnQ4Back.addEventListener('click', () => goToScreen('screen-q3-openness'));
+  btnQ4Next.addEventListener('click', () => {
     if (window.soundEngine) window.soundEngine.playPromptSwitch();
     goToScreen('screen-open-ended');
   });
 
-  btnBackToScales.addEventListener('click', () => {
-    goToScreen('screen-scales');
-  });
+  // Open-Ended Back Button
+  btnBackToScales.addEventListener('click', () => goToScreen('screen-q4-mind'));
 
-  btnResetDone.addEventListener('click', () => {
-    resetKiosk();
-  });
+  // Reset Home
+  btnResetDone.addEventListener('click', resetKiosk);
 
-  // --- 4. SUBMISSION HANDLER ---
+  // --- 5. SUBMISSION HANDLERS ---
+  // A) Submit With Reflection Words / Audio
   btnSubmitReflection.addEventListener('click', async () => {
-    await handleReflectionSubmission();
+    await handleSubmission(false);
   });
 
-  async function handleReflectionSubmission() {
-    // Disable submit button while sending
+  // B) Choice to Not Submit (Skip Reflection - from To change.md)
+  btnSkipReflection.addEventListener('click', async () => {
+    await handleSubmission(true);
+  });
+
+  async function handleSubmission(isSkipped = false) {
     btnSubmitReflection.disabled = true;
-    btnSubmitReflection.textContent = 'Generating Star...';
+    btnSkipReflection.disabled = true;
 
     const currentPrompt = KIOSK_CONFIG.prompts[state.activePromptIndex];
 
-    // Format clean flat TouchDesigner record
     const payload = TouchDesignerBridge.formatRecord({
-      connectedness: state.scores.connectedness,
-      socialEnergy: state.scores.socialEnergy,
-      collectiveEmpathy: state.scores.collectiveEmpathy,
-      promptId: currentPrompt.id,
-      promptQuestion: currentPrompt.text,
-      responseType: state.inputMode,
-      responseText: state.inputMode === 'text' ? state.responseText : '',
-      responseAudioBase64: (state.inputMode === 'audio' && state.audioData) ? state.audioData.base64 : '',
-      audioDurationSec: (state.inputMode === 'audio' && state.audioData) ? state.audioData.duration : 0
+      feeling: state.feeling,
+      intensity: state.intensity,
+      openness: state.openness,
+      mindBusyness: state.mindBusyness,
+      consentGiven: true,
+      promptId: isSkipped ? 'none' : currentPrompt.id,
+      promptQuestion: isSkipped ? '' : currentPrompt.text,
+      responseType: isSkipped ? 'none' : state.inputMode,
+      responseText: isSkipped ? '' : (state.inputMode === 'text' ? state.responseText : ''),
+      responseAudioBase64: isSkipped ? '' : ((state.inputMode === 'audio' && state.audioData) ? state.audioData.base64 : ''),
+      audioDurationSec: isSkipped ? 0 : ((state.inputMode === 'audio' && state.audioData) ? state.audioData.duration : 0)
     });
 
     state.lastSubmittedRecord = payload;
 
-    // Send to Supabase (with offline fallback)
+    // Send to Supabase (with offline queue fallback)
     const result = await window.supabaseHandler.submitRecord(payload);
 
-    // Play celestial starlight formation chord
+    // Play celestial starlight chord
     if (window.soundEngine) window.soundEngine.playStarFormation();
 
-    // Render Star Success View
+    // Render Star Success View & Support Links
     renderSuccessScreen(payload, result);
 
-    // Re-enable button
     btnSubmitReflection.disabled = false;
-    btnSubmitReflection.textContent = 'Light My Star in the Constellation ✨';
+    btnSkipReflection.disabled = false;
 
     // Transition to success screen
     goToScreen('screen-success');
 
-    // Trigger auto-reset countdown (15s)
-    startSuccessCountdown(15);
+    // Trigger 20s auto-reset countdown
+    startSuccessCountdown(20);
 
-    // Trigger burst in background constellation canvas!
+    // Trigger visual burst in background constellation canvas
     if (window.constellationBg) {
       window.constellationBg.triggerStarBurst(payload);
     }
 
-    // Refresh operator drawer queue count
     updateQueueCountDisplay();
   }
 
   function renderSuccessScreen(payload, submitResult) {
-    // Apply TouchDesigner parameters to visual star representation
+    const feeling = TouchDesignerBridge.getFeelingConfig(payload.feeling_id);
     const brightness = payload.td_star_brightness;
     const r = Math.round(payload.td_color_r * 255);
     const g = Math.round(payload.td_color_g * 255);
     const b = Math.round(payload.td_color_b * 255);
     const rgbStr = `rgb(${r}, ${g}, ${b})`;
-    const glowStr = `rgba(${r}, ${g}, ${b}, ${brightness * 0.8})`;
+    const glowStr = `rgba(${r}, ${g}, ${b}, ${brightness * 0.85})`;
 
     if (successStarVisual) {
       successStarVisual.style.backgroundColor = rgbStr;
@@ -463,22 +523,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (successStarAura) {
       successStarAura.style.background = `radial-gradient(circle, ${glowStr} 0%, transparent 70%)`;
-      successStarAura.style.animationDuration = `${(1 / payload.td_pulse_rate_hz).toFixed(2)}s`;
+      successStarAura.style.animationDuration = `${(1 / Math.max(0.2, payload.td_pulse_rate_hz)).toFixed(2)}s`;
     }
 
-    // Display TouchDesigner mapped values
-    if (successParamBrightness) successParamBrightness.textContent = `${Math.round(brightness * 100)}%`;
-    if (successParamHue) successParamHue.textContent = `Hue ${(payload.td_color_hue * 360).toFixed(0)}° (${rgbStr})`;
-    if (successParamLine) successParamLine.textContent = `${payload.td_line_thickness.toFixed(1)} px`;
-    if (successParamPulse) successParamPulse.textContent = `${payload.td_pulse_rate_hz.toFixed(2)} Hz`;
+    if (successStarOrbit) {
+      successStarOrbit.style.transform = `rotate(${payload.td_rotation_angle}deg) scale(${payload.td_star_scale * 1.1})`;
+      successStarOrbit.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
+    }
 
-    // Show sync status badge
+    // TouchDesigner Parameters Output
+    if (paramStarColor) paramStarColor.textContent = `${feeling.label} (${feeling.colorName})`;
+    if (paramStarBrightness) paramStarBrightness.textContent = `${Math.round(brightness * 100)}%`;
+    if (paramLineThickness) paramLineThickness.textContent = `${payload.td_line_thickness.toFixed(1)} px`;
+    if (paramRotationSpeed) paramRotationSpeed.textContent = `${payload.td_rotation_speed.toFixed(1)} °/s (Tilt: ${payload.td_rotation_angle > 0 ? '+' : ''}${payload.td_rotation_angle}°)`;
+
+    // Summary pills
+    if (sumFeeling) sumFeeling.textContent = `${feeling.icon} ${feeling.label}`;
+    if (sumIntensity) sumIntensity.textContent = `${payload.score_intensity}/5 Intensity`;
+    if (sumOpenness) sumOpenness.textContent = `${payload.score_openness}/5 Presence`;
+    if (sumMind) sumMind.textContent = `${payload.score_mind_busyness}/5 Mind`;
+
+    // Sync status badge
     const syncStatusEl = document.getElementById('success-sync-status');
     if (syncStatusEl) {
       if (submitResult.mode === 'supabase_live') {
-        syncStatusEl.innerHTML = `<span class="badge-dot live"></span> Live Synced to RMIT Supabase & TouchDesigner`;
+        syncStatusEl.innerHTML = `<span class="badge-dot live"></span> Synced to TouchDesigner &amp; Supabase`;
       } else {
-        syncStatusEl.innerHTML = `<span class="badge-dot local"></span> Stored in Kiosk Local Constellation (Ready to sync)`;
+        syncStatusEl.innerHTML = `<span class="badge-dot local"></span> Stored in Kiosk Local Memory (Ready to sync)`;
       }
     }
   }
@@ -498,18 +569,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1000);
   }
 
-  // --- 5. KIOSK RESET & PRIVACY PROTECTION ---
+  // --- 6. KIOSK RESET & PRIVACY PROTECTION ---
   function resetKiosk() {
     clearInterval(state.successResetInterval);
     clearInterval(state.idleCountdownTimer);
     hideIdleModal();
 
-    // Reset scores to defaults
-    state.scores.connectedness = KIOSK_CONFIG.scales.connectedness.defaultVal;
-    state.scores.socialEnergy = KIOSK_CONFIG.scales.socialEnergy.defaultVal;
-    state.scores.collectiveEmpathy = KIOSK_CONFIG.scales.collectiveEmpathy.defaultVal;
+    // Reset answers
+    state.feeling = 'calm';
+    state.intensity = 3;
+    state.openness = 3;
+    state.mindBusyness = 3;
 
-    // Reset text & audio inputs
+    selectFeeling('calm');
+    initScales();
+
+    // Reset open-ended text & audio
     state.responseText = '';
     if (textInput) textInput.value = '';
     if (charCounter) charCounter.textContent = `0 / ${KIOSK_CONFIG.maxTextChars}`;
@@ -523,17 +598,12 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAudioUIState('idle');
     switchInputMode('text');
 
-    // Reset scales visual controls
-    initScales();
-
-    // Return to attract / welcome screen
     goToScreen('screen-welcome');
   }
 
-  // --- 6. IDLE TIMEOUT KIOSK ENGINE ---
+  // --- 7. IDLE TIMEOUT ENGINE ---
   function resetIdleTimer() {
     clearTimeout(state.idleTimer);
-    // Only engage idle reset when not on the idle attract screen
     if (state.currentScreen !== 'screen-welcome') {
       state.idleTimer = setTimeout(triggerIdleWarning, KIOSK_CONFIG.idleTimeoutSec * 1000);
     }
@@ -566,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
   btnStayActive.addEventListener('click', hideIdleModal);
   btnResetNow.addEventListener('click', resetKiosk);
 
-  // Global activity listener
   const activityEvents = ['pointerdown', 'mousemove', 'keydown', 'touchstart'];
   activityEvents.forEach((ev) => {
     window.addEventListener(ev, () => {
@@ -576,8 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   });
 
-  // --- 7. TOP BAR CONTROLS ---
-  // Sound Mute Toggle
+  // --- 8. TOP BAR CONTROLS ---
   btnToggleSound.addEventListener('click', () => {
     if (window.soundEngine) {
       const isMuted = window.soundEngine.toggleMute();
@@ -588,18 +656,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Fullscreen Kiosk Mode
   btnFullscreen.addEventListener('click', () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.warn('Fullscreen request failed:', err);
-      });
+      document.documentElement.requestFullscreen().catch(() => {});
     } else {
       document.exitFullscreen().catch(() => {});
     }
   });
 
-  // --- 8. TOUCHDESIGNER & OPERATOR DRAWER ---
+  // --- 9. TOUCHDESIGNER & OPERATOR DRAWER ---
   btnOpenDevModal.addEventListener('click', () => {
     devModal.classList.remove('hidden');
     supabaseUrlInput.value = window.supabaseHandler.url || '';
@@ -675,9 +740,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tdJsonPreview) return;
     const currentPrompt = KIOSK_CONFIG.prompts[state.activePromptIndex];
     const previewRecord = TouchDesignerBridge.formatRecord({
-      connectedness: state.scores.connectedness,
-      socialEnergy: state.scores.socialEnergy,
-      collectiveEmpathy: state.scores.collectiveEmpathy,
+      feeling: state.feeling,
+      intensity: state.intensity,
+      openness: state.openness,
+      mindBusyness: state.mindBusyness,
+      consentGiven: true,
       promptId: currentPrompt.id,
       promptQuestion: currentPrompt.text,
       responseType: state.inputMode,
@@ -688,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tdJsonPreview.textContent = JSON.stringify(previewRecord, null, 2);
   }
 
-  // --- 9. BACKGROUND LIVE CONSTELLATION CANVAS ---
+  // --- 10. BACKGROUND LIVE CONSTELLATION CANVAS ---
   function initConstellationBackground() {
     const canvas = document.getElementById('constellation-bg');
     if (!canvas) return;
@@ -702,16 +769,17 @@ document.addEventListener('DOMContentLoaded', () => {
       height = canvas.height = window.innerHeight;
     });
 
-    // Particle nodes
-    const particleCount = Math.floor(Math.min(width, height) / 16);
+    const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const particleCount = Math.floor(Math.min(width, height) / 18);
     const particles = [];
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.45,
-        vy: (Math.random() - 0.5) * 0.45,
+        vx: isReducedMotion ? 0 : (Math.random() - 0.5) * 0.35,
+        vy: isReducedMotion ? 0 : (Math.random() - 0.5) * 0.35,
         baseRadius: 1.2 + Math.random() * 2.2,
         phase: Math.random() * Math.PI * 2
       });
@@ -720,8 +788,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const bursts = [];
 
     function triggerStarBurst(payload) {
+      if (isReducedMotion) return;
       const cx = width / 2;
-      const cy = height * 0.38;
+      const cy = height * 0.35;
       const r = Math.round(payload.td_color_r * 255);
       const g = Math.round(payload.td_color_g * 255);
       const b = Math.round(payload.td_color_b * 255);
@@ -750,10 +819,15 @@ document.addEventListener('DOMContentLoaded', () => {
       frame++;
       ctx.clearRect(0, 0, width, height);
 
-      // Current interactive visual settings derived from active slider scores
-      const visual = TouchDesignerBridge.computeVisualParameters(state.scores);
+      const visual = TouchDesignerBridge.computeVisualParameters({
+        feeling: state.feeling,
+        intensity: state.intensity,
+        openness: state.openness,
+        mindBusyness: state.mindBusyness
+      });
+
       const connDist = visual.td_connection_distance * 0.85;
-      const lineThickness = visual.td_line_thickness * 0.45;
+      const lineThickness = visual.td_line_thickness * 0.4;
       const r = Math.round(visual.td_color_r * 255);
       const g = Math.round(visual.td_color_g * 255);
       const b = Math.round(visual.td_color_b * 255);
@@ -768,7 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < connDist) {
-            const alpha = (1 - dist / connDist) * 0.28 * visual.td_star_brightness;
+            const alpha = (1 - dist / connDist) * 0.25 * visual.td_star_brightness;
             ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
             ctx.lineWidth = lineThickness;
             ctx.beginPath();
@@ -782,18 +856,19 @@ document.addEventListener('DOMContentLoaded', () => {
       // Draw particle stars
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
+        if (!isReducedMotion) {
+          p.x += p.vx * (visual.td_rotation_speed / 25);
+          p.y += p.vy * (visual.td_rotation_speed / 25);
+        }
 
         if (p.x < 0) p.x = width;
         if (p.x > width) p.x = 0;
         if (p.y < 0) p.y = height;
         if (p.y > height) p.y = 0;
 
-        const pulse = Math.sin(frame * 0.02 * visual.td_pulse_rate_hz + p.phase);
-        const radius = p.baseRadius * (1 + pulse * 0.3) * visual.td_star_scale * 0.7;
+        const pulse = isReducedMotion ? 0 : Math.sin(frame * 0.02 * visual.td_pulse_rate_hz + p.phase);
+        const radius = p.baseRadius * (1 + pulse * 0.3) * visual.td_star_scale * 0.65;
 
-        // Soft outer glow
         const glowGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 3.5);
         glowGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.5 * visual.td_star_brightness})`);
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -803,14 +878,13 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.arc(p.x, p.y, radius * 3.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Core star
         ctx.fillStyle = `rgba(255, 255, 255, ${0.7 + visual.td_star_brightness * 0.3})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Render star burst particles if any
+      // Bursts
       for (let i = bursts.length - 1; i >= 0; i--) {
         const bItem = bursts[i];
         bItem.x += bItem.vx;
@@ -835,6 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- INITIALIZE EVERYTHING ---
+  initFeelingSelection();
   initScales();
   initPromptBank();
   initInputModes();
@@ -843,8 +918,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Register PWA Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch((err) => {
-      console.log('SW registration note:', err);
-    });
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 });
