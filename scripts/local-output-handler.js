@@ -142,6 +142,8 @@ class LocalOutputHandler {
       const hasPerm = await this.verifyPermission(this.directoryHandle, true);
       if (!hasPerm) return false;
 
+      record = this.cleanRecord(record);
+
       // 1. Write individual identifiable record: reflection_lal_01_calm.json
       const fileName = `reflection_${record.id}.json`;
       const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
@@ -166,7 +168,7 @@ class LocalOutputHandler {
         allRecords = [];
       }
 
-      allRecords = [record, ...allRecords.filter((r) => String(r.id) !== String(record.id))];
+      allRecords = [record, ...allRecords.map((r) => this.cleanRecord(r)).filter((r) => String(r.id) !== String(record.id))];
       const allHandleWrite = await this.directoryHandle.getFileHandle('all_reflections.json', { create: true });
       const allWritable = await allHandleWrite.createWritable();
       await allWritable.write(JSON.stringify(allRecords, null, 2));
@@ -212,6 +214,20 @@ class LocalOutputHandler {
   /* -------------------------------------------------------------------------
      5. Browser File Download Utilities
      ------------------------------------------------------------------------- */
+  cleanRecord(record) {
+    if (!record || typeof record !== 'object') return record;
+    const cleaned = { ...record };
+    delete cleaned.score_connectedness;
+    delete cleaned.score_social_energy;
+    delete cleaned.score_collective_empathy;
+    for (const key of Object.keys(cleaned)) {
+      if (key.startsWith('td_')) {
+        delete cleaned[key];
+      }
+    }
+    return cleaned;
+  }
+
   downloadFile(content, fileName, mimeType = 'application/json') {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -227,12 +243,14 @@ class LocalOutputHandler {
   }
 
   downloadSingleRecord(record) {
-    this.downloadFile(JSON.stringify(record, null, 2), `reflection_${record.id}.json`);
+    const cleaned = this.cleanRecord(record);
+    this.downloadFile(JSON.stringify(cleaned, null, 2), `reflection_${cleaned.id}.json`);
   }
 
   downloadAllRecords() {
     const list = window.supabaseHandler ? window.supabaseHandler.getLocalHistory() : [];
-    this.downloadFile(JSON.stringify(list, null, 2), 'all_reflections.json');
+    const cleaned = (list || []).map((r) => this.cleanRecord(r));
+    this.downloadFile(JSON.stringify(cleaned, null, 2), 'all_reflections.json');
   }
 
   setAutoDownload(enabled) {
@@ -250,6 +268,9 @@ class LocalOutputHandler {
     if (!record.timestamp) {
       record.timestamp = new Date().toISOString();
     }
+
+    // Guarantee unbloated clean record format (no legacy scores or td_* visual keys)
+    record = this.cleanRecord(record);
 
     const results = {
       bridgeSaved: false,
@@ -279,6 +300,81 @@ class LocalOutputHandler {
     }
 
     return results;
+  }
+
+  /* -------------------------------------------------------------------------
+     7. Real-Time Stream Debouncer for Live TouchDesigner Feedback
+     ------------------------------------------------------------------------- */
+  sendLiveDraft(draftRecord) {
+    if (!draftRecord) return;
+    this._pendingDraft = draftRecord;
+
+    if (this._draftDebounceTimer) {
+      clearTimeout(this._draftDebounceTimer);
+    }
+
+    // 75ms debounce ensures rapid keystrokes/slider drags never cause UI lag or network congestions
+    this._draftDebounceTimer = setTimeout(() => {
+      this._flushLiveDraft();
+    }, 75);
+  }
+
+  async _flushLiveDraft() {
+    if (!this._pendingDraft) return;
+    const draft = this.cleanRecord(this._pendingDraft);
+    draft.id = 'live_draft';
+    draft.is_draft = true;
+    if (!draft.timestamp) {
+      draft.timestamp = new Date().toISOString();
+    }
+    this._pendingDraft = null;
+
+    // 1. Post to local bridge server (/api/live-draft)
+    try {
+      const res = await fetch('/api/live-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draft)
+      });
+      if (res.ok) return;
+    } catch (e) {
+      try {
+        const fallbackRes = await fetch('http://localhost:8080/api/live-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(draft)
+        });
+        if (fallbackRes.ok) return;
+      } catch (e2) {
+        // Fallback to directory handle if offline
+      }
+    }
+
+    // 2. Fallback to direct directory writing if bridge server is not running
+    if (this.directoryHandle) {
+      await this.writeDraftToDirectory(draft);
+    }
+  }
+
+  async writeDraftToDirectory(draftRecord) {
+    if (!this.directoryHandle) return false;
+    try {
+      const hasPerm = await this.verifyPermission(this.directoryHandle, true);
+      if (!hasPerm) return false;
+
+      const cleaned = this.cleanRecord(draftRecord);
+      cleaned.id = 'live_draft';
+      cleaned.is_draft = true;
+
+      // File System Access API uses atomic swap under the hood during createWritable()
+      const draftHandle = await this.directoryHandle.getFileHandle('live_draft.json', { create: true });
+      const writable = await draftHandle.createWritable();
+      await writable.write(JSON.stringify(cleaned, null, 2));
+      await writable.close();
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   notifyStatusChange(statusText) {

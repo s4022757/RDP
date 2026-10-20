@@ -22,11 +22,6 @@ CREATE TABLE IF NOT EXISTS public.reflections (
     score_openness SMALLINT NOT NULL CHECK (score_openness BETWEEN 1 AND 5),        -- Scale & Presence (1 Turned inward - 5 Get amongst it!)
     score_mind_busyness SMALLINT NOT NULL CHECK (score_mind_busyness BETWEEN 1 AND 5), -- Rotation/Orientation (1 Very quiet - 5 Racing)
     
-    -- Backward-compatible 1-10 aliases for TouchDesigner setups
-    score_connectedness SMALLINT DEFAULT 6,
-    score_social_energy SMALLINT DEFAULT 6,
-    score_collective_empathy SMALLINT DEFAULT 6,
-    
     -- Open-ended reflection content & consent
     consent_given BOOLEAN NOT NULL DEFAULT true,
     prompt_id TEXT NOT NULL DEFAULT 'main-library-connection',
@@ -36,20 +31,6 @@ CREATE TABLE IF NOT EXISTS public.reflections (
     response_audio_base64 TEXT,
     audio_duration_sec NUMERIC(4, 1) DEFAULT 0.0 CHECK (audio_duration_sec <= 30.0),
     char_count INTEGER DEFAULT 0,
-    
-    -- Pre-calculated Flat TouchDesigner Visual Parameters (Direct DAT / CHOP Mapping)
-    td_star_color TEXT NOT NULL DEFAULT 'calm',
-    td_color_hue NUMERIC(4, 3) NOT NULL,          -- 0.000 to 1.000 (from emotion)
-    td_color_r NUMERIC(4, 3) NOT NULL,            -- 0.000 to 1.000 (pre-computed RGB)
-    td_color_g NUMERIC(4, 3) NOT NULL,            -- 0.000 to 1.000
-    td_color_b NUMERIC(4, 3) NOT NULL,            -- 0.000 to 1.000
-    td_star_brightness NUMERIC(4, 3) NOT NULL,    -- 0.200 to 1.000 (from intensity)
-    td_star_scale NUMERIC(4, 2) NOT NULL,         -- 0.80 to 2.40 (from openness)
-    td_line_thickness NUMERIC(4, 2) NOT NULL,     -- 1.00 to 6.00 px (from openness)
-    td_connection_distance INTEGER NOT NULL,       -- 70 to 270 px (from openness)
-    td_rotation_speed NUMERIC(5, 1) NOT NULL,     -- 4.0 to 75.0 deg/s (from mind busyness)
-    td_rotation_angle NUMERIC(5, 1) NOT NULL,     -- -60.0 to +60.0 deg orientation tilt
-    td_pulse_rate_hz NUMERIC(4, 2) NOT NULL,      -- 0.30 to 2.20 Hz
     
     is_active BOOLEAN NOT NULL DEFAULT true
 );

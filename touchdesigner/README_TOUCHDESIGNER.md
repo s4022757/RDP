@@ -88,34 +88,27 @@ npm run start:bridge
 
 ## 4. Flat Record Data Structure
 
-Every record (both in Supabase and in local JSON files) uses the following flat structure:
+Every record (both in Supabase and in local JSON files) uses the following clean, unbloated flat structure:
 
-| Field Name | Type | Range / Format | Description & TouchDesigner Mapping |
+| Field Name | Type | Range / Format | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | String | `lal_172...` | Unique identifier for the reflection star |
-| `timestamp` | ISO String | UTC Timestamp | Creation time |
-| `feeling_id` | String | `'happy'`, `'calm'`, `'tired'`, `'anxious'`, `'sad'`, `'frustrated'` | Q1 Emotion / Feeling |
+| `id` | String | `lal_01_calm`, `lal_sample_01_calm` | Human-readable identifiable identifier |
+| `timestamp` | ISO String | UTC Timestamp | Submission timestamp |
+| `kiosk_id` | String | `'rmit-swanston-lvl6-booth-01'` | Kiosk booth identifier |
+| `feeling_id` | String | `'happy'`, `'calm'`, `'tired'`, `'anxious'`, `'sad'`, `'frustrated'` | Q1 Emotion / Feeling ID |
 | `feeling_label` | String | `'Happy'`, `'Calm'`, etc. | Human-readable emotion name |
 | `score_intensity` | Integer | `1` to `5` | Q2: Star Intensity (1 Barely there to 5 Very strong) |
 | `score_openness` | Integer | `1` to `5` | Q3: Scale & Presence (1 Turned inward to 5 Get amongst it!) |
 | `score_mind_busyness` | Integer | `1` to `5` | Q4: Rotation & Orientation (1 Very quiet to 5 Racing) |
 | `consent_given` | Boolean | `true` | Explicit user consent for installation display |
+| `prompt_id` | String | `'main-library-connection'` | Active reflection prompt identifier |
+| `prompt_question` | String | Text | Prompt question presented to user |
 | `response_type` | String | `'text'`, `'audio'`, `'none'` | Media type (supports skip without words) |
 | `response_text` | String | Max 300 chars | Text reflection (if provided) |
-| `response_audio_base64`| String | Base64 URL | WebM/Ogg audio payload (if provided) |
+| `response_audio_base64`| String | Base64 URL | WebM/Ogg audio payload (in individual records if audio recorded) |
 | `audio_duration_sec` | Float | `0.0` to `30.0` | Recorded duration in seconds |
-| **`td_star_color`** | String | `'amber'`, `'teal'`, etc. | Named palette of star |
-| **`td_color_hue`** | Float | **`0.000` to `1.000`** | **Color Hue** (derived from Q1 Emotion) |
-| **`td_color_r`** | Float | **`0.000` to `1.000`** | Pre-calculated Red float for Constant MAT |
-| **`td_color_g`** | Float | **`0.000` to `1.000`** | Pre-calculated Green float for Constant MAT |
-| **`td_color_b`** | Float | **`0.000` to `1.000`** | Pre-calculated Blue float for Constant MAT |
-| **`td_star_brightness`** | Float | **`0.200` to `1.000`** | **Star luminosity** (mapped from Q2 Intensity 1-5) |
-| **`td_star_scale`** | Float | **`0.80` to `2.40`** | **Particle star scale** (mapped from Q3 Openness 1-5) |
-| **`td_line_thickness`** | Float | **`1.00` to `6.00` px** | **Constellation line thickness** (from Q3 Openness) |
-| **`td_connection_distance`**| Integer | **`70` to `270` px** | **Connection clustering distance** (from Q3 Openness) |
-| **`td_rotation_speed`** | Float | **`4.0` to `75.0` °/s** | **Continuous orbit / rotation speed** (from Q4 Mind 1-5) |
-| **`td_rotation_angle`** | Float | **`-60.0` to `+60.0` °** | **Geometric orientation tilt** (read at distance) |
-| **`td_pulse_rate_hz`** | Float | **`0.30` to `2.20` Hz** | **LFO pulse cadence** |
+| `char_count` | Integer | 0 to 300 | Character count of text response |
+| `is_active` | Boolean | `true` | Moderation / display flag |
 
 ---
 
@@ -139,16 +132,24 @@ If you prefer not using Python:
 3. Set `Auto Reload` to **On**.
 4. Whenever the kiosk writes a new reflection, the node immediately updates!
 
+### Setup 4: Real-Time Live Draft Feedback (`live_draft.json` & `table_live_draft`)
+For live responsive visual feedback as the participant is currently moving sliders or typing at the booth:
+1. Place a **JSON DAT** or **File In DAT** pointing to `./records/live_draft.json` with `Auto Reload` set to **On**.
+2. Alternatively, add a **Table DAT** named `table_live_draft`; [`touchdesigner_poll_script.py`](./touchdesigner_poll_script.py) automatically streams the active participant's emotion, 1–5 scores, and text into it on every tick.
+3. **No Burst Collisions**: Draft updates have `is_draft: true` and will **never** pulse `trigger_new_star` or trigger star explosion bursts. Only the final submission (`Light My Star`) triggers the explosion!
+4. **Collision-Free Atomic Updates**: Files are swapped atomically (`.tmp` + rename) with a 75ms debounce, preventing file-lock collisions and UI lag.
+
 ---
 
-## 6. Visual Parameter Binding Guide
+## 6. Visual Parameter Mapping Guide (Inside TouchDesigner)
 
-- **Star Emotion & Color (`td_color_r`, `td_color_g`, `td_color_b`)**:
-  - Connect directly to the RGB channels of a Constant MAT, Line MAT, or Point SOP color attribute (`Cd[0], Cd[1], Cd[2]`).
-- **Star Brightness / Luminosity (`td_star_brightness`)**:
-  - Connect to a Constant MAT's `Emit` or `Alpha` multiplier, or a Particle SOP's life color alpha.
-- **Star Scale & Presence (`td_star_scale`, `td_line_thickness`)**:
-  - Connect to a Transform SOP scale attribute and Line MAT width.
-- **Star Rotation Speed & Orientation (`td_rotation_speed`, `td_rotation_angle`)**:
-  - Connect `td_rotation_speed` to an LFO CHOP or Speed CHOP driving geometry `rx, ry, rz` rotation.
-  - Connect `td_rotation_angle` to a static orientation tilt so stars are visibly tilted and readable at a distance in the installation.
+You can easily drive visual graphics in TouchDesigner directly from the clean 1–5 scores using Math CHOPs or expressions:
+
+- **Star Emotion & Color (`feeling_id`)**:
+  - Map `feeling_id` (`'happy'`, `'calm'`, `'tired'`, `'anxious'`, `'sad'`, `'frustrated'`) to your color lookup table or MAT colors.
+- **Star Brightness / Luminosity (`score_intensity` 1–5)**:
+  - Scale `score_intensity` (1–5) via Math CHOP to `0.20` – `1.00` for Constant MAT `Emit` or `Alpha`.
+- **Star Scale & Presence (`score_openness` 1–5)**:
+  - Scale `score_openness` (1–5) to `0.80` – `2.40` for Transform SOP scale and constellation line width.
+- **Star Rotation Speed & Orientation (`score_mind_busyness` 1–5)**:
+  - Scale `score_mind_busyness` (1–5) to `4.0` – `75.0` °/s for LFO / Speed CHOP rotation and `-60°` to `+60°` static tilt.

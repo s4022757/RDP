@@ -1,0 +1,20 @@
+{
+  "id": "live_draft",
+  "timestamp": "2026-10-20T18:31:28.137Z",
+  "kiosk_id": "rmit-swanston-lvl6-booth-01",
+  "feeling_id": "calm",
+  "feeling_label": "Calm",
+  "score_intensity": 5,
+  "score_openness": 5,
+  "score_mind_busyness": 5,
+  "consent_given": true,
+  "prompt_id": "none",
+  "prompt_question": "",
+  "response_type": "none",
+  "response_text": "",
+  "response_audio_base64": "",
+  "audio_duration_sec": 0,
+  "char_count": 0,
+  "is_active": true,
+  "is_draft": true
+}

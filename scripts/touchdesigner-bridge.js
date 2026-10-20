@@ -84,13 +84,6 @@ class TouchDesignerBridge {
     const openness = Math.max(1, Math.min(5, parseInt(data.openness, 10) || 3));
     const mind = Math.max(1, Math.min(5, parseInt(data.mindBusyness, 10) || 3));
 
-    const visual = this.computeVisualParameters({
-      feeling: feeling.id,
-      intensity,
-      openness,
-      mindBusyness: mind
-    });
-
     const isSkipped = data.responseType === 'none' || (!data.responseText && !data.responseAudioBase64);
     const responseType = isSkipped ? 'none' : (data.responseType || 'text');
 
@@ -108,11 +101,6 @@ class TouchDesignerBridge {
       score_openness: openness,
       score_mind_busyness: mind,
 
-      // Backward compatible aliases
-      score_connectedness: openness * 2,
-      score_social_energy: intensity * 2,
-      score_collective_empathy: mind * 2,
-
       // Open reflection fields
       consent_given: Boolean(data.consentGiven !== false),
       prompt_id: isSkipped ? 'none' : (data.promptId || 'main-library-connection'),
@@ -122,20 +110,6 @@ class TouchDesignerBridge {
       response_audio_base64: responseType === 'audio' ? (data.responseAudioBase64 || '') : '',
       audio_duration_sec: responseType === 'audio' ? (Math.round((data.audioDurationSec || 0) * 10) / 10) : 0,
       char_count: responseType === 'text' ? (data.responseText || '').length : 0,
-
-      // Flat TouchDesigner visual parameters
-      td_star_color: visual.td_star_color,
-      td_color_hue: visual.td_color_hue,
-      td_color_r: visual.td_color_r,
-      td_color_g: visual.td_color_g,
-      td_color_b: visual.td_color_b,
-      td_star_brightness: visual.td_star_brightness,
-      td_star_scale: visual.td_star_scale,
-      td_line_thickness: visual.td_line_thickness,
-      td_connection_distance: visual.td_connection_distance,
-      td_rotation_speed: visual.td_rotation_speed,
-      td_rotation_angle: visual.td_rotation_angle,
-      td_pulse_rate_hz: visual.td_pulse_rate_hz,
 
       is_active: true
     };

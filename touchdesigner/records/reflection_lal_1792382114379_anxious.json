@@ -1,0 +1,19 @@
+{
+  "id": "lal_1792382114379_anxious",
+  "timestamp": "2026-10-20T16:39:18.083Z",
+  "kiosk_id": "rmit-swanston-lvl6-booth-01",
+  "feeling_id": "anxious",
+  "feeling_label": "Anxious",
+  "score_intensity": 1,
+  "score_openness": 1,
+  "score_mind_busyness": 1,
+  "consent_given": true,
+  "prompt_id": "none",
+  "prompt_question": "",
+  "response_type": "none",
+  "response_text": "",
+  "response_audio_base64": "",
+  "audio_duration_sec": 0,
+  "char_count": 0,
+  "is_active": true
+}

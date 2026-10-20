@@ -1,0 +1,19 @@
+{
+  "id": "lal_16_calm",
+  "timestamp": "2026-10-20T17:06:11.547Z",
+  "kiosk_id": "rmit-swanston-lvl6-booth-01",
+  "feeling_id": "calm",
+  "feeling_label": "Calm",
+  "score_intensity": 5,
+  "score_openness": 1,
+  "score_mind_busyness": 5,
+  "consent_given": true,
+  "prompt_id": "main-library-connection",
+  "prompt_question": "If someone else in the library was feeling the exact same way, what would you want them to hear?",
+  "response_type": "text",
+  "response_text": "ithikitwok",
+  "response_audio_base64": "",
+  "audio_duration_sec": 0,
+  "char_count": 10,
+  "is_active": true
+}

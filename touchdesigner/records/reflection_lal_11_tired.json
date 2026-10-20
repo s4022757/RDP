@@ -1,0 +1,19 @@
+{
+  "id": "lal_11_tired",
+  "timestamp": "2026-10-20T16:34:34.612Z",
+  "kiosk_id": "rmit-swanston-lvl6-booth-01",
+  "feeling_id": "tired",
+  "feeling_label": "Tired",
+  "score_intensity": 1,
+  "score_openness": 1,
+  "score_mind_busyness": 1,
+  "consent_given": true,
+  "prompt_id": "main-library-connection",
+  "prompt_question": "If someone else in the library was feeling the exact same way, what would you want them to hear?",
+  "response_type": "text",
+  "response_text": "wok??",
+  "response_audio_base64": "",
+  "audio_duration_sec": 0,
+  "char_count": 5,
+  "is_active": true
+}

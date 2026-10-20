@@ -183,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (audioDurationBadge) {
         audioDurationBadge.textContent = `${data.duration.toFixed(1)}s recorded`;
       }
+      updateTouchDesignerLivePreview();
     },
     onError: (msg) => {
       if (audioErrorMessage) {
@@ -308,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
           void promptCard.offsetWidth;
           promptCard.classList.add('prompt-pulse');
         }
+        updateTouchDesignerLivePreview();
       });
     }
   }
@@ -338,6 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           charCounter.classList.remove('char-limit-near');
         }
+        updateTouchDesignerLivePreview();
       });
     }
 
@@ -363,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         state.audioData = null;
         updateAudioUIState('idle');
+        updateTouchDesignerLivePreview();
       });
     }
   }
@@ -379,6 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (mode === 'audio' && audioRecorder.state === 'idle') {
       audioRecorder.drawIdleWaveform();
     }
+    updateTouchDesignerLivePreview();
   }
 
   function updateAudioUIState(recState) {
@@ -547,34 +552,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderSuccessScreen(payload, submitResult) {
     const feeling = TouchDesignerBridge.getFeelingConfig(payload.feeling_id);
-    const brightness = payload.td_star_brightness;
-    const r = Math.round(payload.td_color_r * 255);
-    const g = Math.round(payload.td_color_g * 255);
-    const b = Math.round(payload.td_color_b * 255);
+    const visual = TouchDesignerBridge.computeVisualParameters({
+      feeling: payload.feeling_id,
+      intensity: payload.score_intensity,
+      openness: payload.score_openness,
+      mindBusyness: payload.score_mind_busyness
+    });
+    const brightness = visual.td_star_brightness;
+    const r = Math.round(visual.td_color_r * 255);
+    const g = Math.round(visual.td_color_g * 255);
+    const b = Math.round(visual.td_color_b * 255);
     const rgbStr = `rgb(${r}, ${g}, ${b})`;
     const glowStr = `rgba(${r}, ${g}, ${b}, ${brightness * 0.85})`;
 
     if (successStarVisual) {
       successStarVisual.style.backgroundColor = rgbStr;
       successStarVisual.style.boxShadow = `0 0 ${Math.round(brightness * 45)}px ${Math.round(brightness * 18)}px ${glowStr}`;
-      successStarVisual.style.transform = `scale(${payload.td_star_scale})`;
+      successStarVisual.style.transform = `scale(${visual.td_star_scale})`;
     }
 
     if (successStarAura) {
       successStarAura.style.background = `radial-gradient(circle, ${glowStr} 0%, transparent 70%)`;
-      successStarAura.style.animationDuration = `${(1 / Math.max(0.2, payload.td_pulse_rate_hz)).toFixed(2)}s`;
+      successStarAura.style.animationDuration = `${(1 / Math.max(0.2, visual.td_pulse_rate_hz)).toFixed(2)}s`;
     }
 
     if (successStarOrbit) {
-      successStarOrbit.style.transform = `rotate(${payload.td_rotation_angle}deg) scale(${payload.td_star_scale * 1.1})`;
+      successStarOrbit.style.transform = `rotate(${visual.td_rotation_angle}deg) scale(${visual.td_star_scale * 1.1})`;
       successStarOrbit.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
     }
 
     // TouchDesigner Parameters Output
     if (paramStarColor) paramStarColor.textContent = `${feeling.label} (${feeling.colorName})`;
     if (paramStarBrightness) paramStarBrightness.textContent = `${Math.round(brightness * 100)}%`;
-    if (paramLineThickness) paramLineThickness.textContent = `${payload.td_line_thickness.toFixed(1)} px`;
-    if (paramRotationSpeed) paramRotationSpeed.textContent = `${payload.td_rotation_speed.toFixed(1)} °/s (Tilt: ${payload.td_rotation_angle > 0 ? '+' : ''}${payload.td_rotation_angle}°)`;
+    if (paramLineThickness) paramLineThickness.textContent = `${visual.td_line_thickness.toFixed(1)} px`;
+    if (paramRotationSpeed) paramRotationSpeed.textContent = `${visual.td_rotation_speed.toFixed(1)} °/s (Tilt: ${visual.td_rotation_angle > 0 ? '+' : ''}${visual.td_rotation_angle}°)`;
 
     // Summary pills
     if (sumFeeling) sumFeeling.textContent = `${feeling.icon} ${feeling.label}`;
@@ -827,22 +838,30 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateTouchDesignerLivePreview() {
-    if (!tdJsonPreview) return;
-    const currentPrompt = KIOSK_CONFIG.prompts[state.activePromptIndex];
-    const previewRecord = TouchDesignerBridge.formatRecord({
+    const currentPrompt = KIOSK_CONFIG.prompts[state.activePromptIndex] || {};
+    const draftRecord = TouchDesignerBridge.formatRecord({
+      id: 'live_draft',
       feeling: state.feeling,
       intensity: state.intensity,
       openness: state.openness,
       mindBusyness: state.mindBusyness,
-      consentGiven: true,
-      promptId: currentPrompt.id,
-      promptQuestion: currentPrompt.text,
+      consentGiven: Boolean(state.consentGiven !== false),
+      promptId: currentPrompt.id || 'main-library-connection',
+      promptQuestion: currentPrompt.text || '',
       responseType: state.inputMode,
-      responseText: state.responseText || "Preview reflection text...",
+      responseText: state.responseText || '',
       audioDurationSec: state.audioData ? state.audioData.duration : 0
     });
+    draftRecord.is_draft = true;
 
-    tdJsonPreview.textContent = JSON.stringify(previewRecord, null, 2);
+    if (tdJsonPreview) {
+      tdJsonPreview.textContent = JSON.stringify(draftRecord, null, 2);
+    }
+
+    // Stream live draft to TouchDesigner with debouncing to prevent UI lag or collisions
+    if (window.localOutputHandler && typeof window.localOutputHandler.sendLiveDraft === 'function') {
+      window.localOutputHandler.sendLiveDraft(draftRecord);
+    }
   }
 
   // --- 10. BACKGROUND LIVE CONSTELLATION CANVAS ---
@@ -881,9 +900,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isReducedMotion) return;
       const cx = width / 2;
       const cy = height * 0.35;
-      const r = Math.round(payload.td_color_r * 255);
-      const g = Math.round(payload.td_color_g * 255);
-      const b = Math.round(payload.td_color_b * 255);
+      const feeling = TouchDesignerBridge.getFeelingConfig(payload.feeling_id);
+      const [cr, cg, cb] = feeling.rgb || [0.925, 0.973, 0.753];
+      const r = Math.round(cr * 255);
+      const g = Math.round(cg * 255);
+      const b = Math.round(cb * 255);
 
       for (let i = 0; i < 28; i++) {
         const angle = Math.random() * Math.PI * 2;
@@ -1005,6 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initInputModes();
   initConstellationBackground();
   resetIdleTimer();
+  updateTouchDesignerLivePreview();
 
   // Register PWA Service Worker
   if ('serviceWorker' in navigator) {

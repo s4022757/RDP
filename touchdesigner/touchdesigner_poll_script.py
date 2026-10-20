@@ -25,6 +25,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOCAL_RECORDS_DIR = os.path.join(SCRIPT_DIR, "records")
 LOCAL_ALL_FILE = os.path.join(LOCAL_RECORDS_DIR, "all_reflections.json")
 LOCAL_LATEST_FILE = os.path.join(LOCAL_RECORDS_DIR, "latest_reflection.json")
+LOCAL_DRAFT_FILE = os.path.join(LOCAL_RECORDS_DIR, "live_draft.json")
 
 # --- SUPABASE SERVER SETTINGS ---
 SUPABASE_URL = "https://viwuibpyqwlpztencstv.supabase.co"
@@ -34,6 +35,71 @@ FETCH_LIMIT = 20
 
 # Cache of known reflection IDs to detect newly arrived stars in TouchDesigner
 seen_ids = set()
+
+
+def fetch_live_draft():
+    """
+    Reads the real-time draft state JSON (live_draft.json) for live visual feedback
+    as the participant interacts with the kiosk booth.
+    """
+    if os.path.isfile(LOCAL_DRAFT_FILE):
+        try:
+            with open(LOCAL_DRAFT_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+        except Exception:
+            # File may be mid-atomic swap; safely skip this tick
+            return None
+    return None
+
+
+def update_touchdesigner_live_draft(draft):
+    """
+    Updates a dedicated TouchDesigner Table DAT ('table_live_draft') with
+    real-time kiosk feedback without altering past stars or triggering bursts.
+    """
+    if not draft or not isinstance(draft, dict):
+        return
+
+    try:
+        draft_dat = op('table_live_draft')
+    except NameError:
+        draft_dat = None
+
+    if not draft_dat:
+        return
+
+    columns = [
+        "id", "timestamp", "kiosk_id", "feeling_id", "feeling_label",
+        "score_intensity", "score_openness", "score_mind_busyness",
+        "consent_given", "prompt_id", "prompt_question",
+        "response_type", "response_text", "audio_duration_sec", "char_count", "is_draft", "is_active"
+    ]
+
+    row = [
+        str(draft.get("id", "live_draft")),
+        str(draft.get("timestamp", "")),
+        str(draft.get("kiosk_id", "rmit-swanston-lvl6-booth-01")),
+        str(draft.get("feeling_id", "calm")),
+        str(draft.get("feeling_label", "Calm")),
+        str(draft.get("score_intensity", 3)),
+        str(draft.get("score_openness", 3)),
+        str(draft.get("score_mind_busyness", 3)),
+        str(draft.get("consent_given", True)),
+        str(draft.get("prompt_id", "main-library-connection")),
+        str(draft.get("prompt_question", "")),
+        str(draft.get("response_type", "text")),
+        str(draft.get("response_text", "")),
+        str(draft.get("audio_duration_sec", 0)),
+        str(draft.get("char_count", 0)),
+        str(draft.get("is_draft", True)),
+        str(draft.get("is_active", True))
+    ]
+
+    draft_dat.clear()
+    draft_dat.appendRow(columns)
+    draft_dat.appendRow(row)
 
 
 def fetch_from_local_directory():
@@ -136,15 +202,12 @@ def update_touchdesigner_table(records):
     if not table_dat:
         return
 
-    # Clear and set column headers matching our flat JSON keys
+    # Clear and set column headers matching our clean JSON keys
     columns = [
-        "id", "timestamp", "feeling_id", "feeling_label",
+        "id", "timestamp", "kiosk_id", "feeling_id", "feeling_label",
         "score_intensity", "score_openness", "score_mind_busyness",
-        "response_type", "response_text",
-        "td_star_color", "td_star_brightness", "td_star_scale",
-        "td_color_hue", "td_color_r", "td_color_g", "td_color_b",
-        "td_line_thickness", "td_connection_distance",
-        "td_rotation_speed", "td_rotation_angle", "td_pulse_rate_hz"
+        "consent_given", "prompt_id", "prompt_question",
+        "response_type", "response_text", "audio_duration_sec", "char_count", "is_active"
     ]
     
     table_dat.clear()
@@ -154,25 +217,20 @@ def update_touchdesigner_table(records):
         row = [
             str(item.get("id", "")),
             str(item.get("timestamp", "")),
+            str(item.get("kiosk_id", "rmit-swanston-lvl6-booth-01")),
             str(item.get("feeling_id", "calm")),
             str(item.get("feeling_label", "Calm")),
             str(item.get("score_intensity", 3)),
             str(item.get("score_openness", 3)),
             str(item.get("score_mind_busyness", 3)),
+            str(item.get("consent_given", True)),
+            str(item.get("prompt_id", "main-library-connection")),
+            str(item.get("prompt_question", "")),
             str(item.get("response_type", "text")),
             str(item.get("response_text", "")),
-            str(item.get("td_star_color", "calm")),
-            str(item.get("td_star_brightness", 0.6)),
-            str(item.get("td_star_scale", 1.2)),
-            str(item.get("td_color_hue", 0.51)),
-            str(item.get("td_color_r", 0.824)),
-            str(item.get("td_color_g", 0.969)),
-            str(item.get("td_color_b", 0.977)),
-            str(item.get("td_line_thickness", 3.0)),
-            str(item.get("td_connection_distance", 150)),
-            str(item.get("td_rotation_speed", 25.0)),
-            str(item.get("td_rotation_angle", 0.0)),
-            str(item.get("td_pulse_rate_hz", 1.0))
+            str(item.get("audio_duration_sec", 0)),
+            str(item.get("char_count", 0)),
+            str(item.get("is_active", True))
         ]
         table_dat.appendRow(row)
 
@@ -181,15 +239,18 @@ def trigger_new_star_event(record):
     """
     Called when a brand new reflection has just arrived.
     Fires visual burst and sound cues in TouchDesigner.
+    GUARANTEED: Draft state updates will NEVER trigger a burst explosion.
     """
+    if not record or record.get("is_draft") or str(record.get("id")) == "live_draft":
+        return
+
     star_id = record.get("id")
     feeling = record.get("feeling_label", "Calm")
-    brightness = record.get("td_star_brightness", 0.6)
-    scale = record.get("td_star_scale", 1.0)
-    rot_speed = record.get("td_rotation_speed", 25.0)
-    rgb = (record.get("td_color_r", 0.5), record.get("td_color_g", 0.5), record.get("td_color_b", 0.5))
+    intensity = record.get("score_intensity", 3)
+    openness = record.get("score_openness", 3)
+    mind = record.get("score_mind_busyness", 3)
     
-    print(f"✨ [New Star Formed] Mode: {MODE} | ID: {star_id} | Emotion: {feeling} | Brightness: {brightness} | Scale: {scale} | Rot: {rot_speed} deg/s | RGB: {rgb}")
+    print(f"✨ [New Star Formed] Mode: {MODE} | ID: {star_id} | Emotion: {feeling} | Intensity: {intensity}/5 | Openness: {openness}/5 | Mind: {mind}/5")
     
     try:
         trigger_chop = op('trigger_new_star')
@@ -205,18 +266,25 @@ def onFrame():
     Can be called on every frame or on a Timer CHOP tick (e.g. 1 Hz).
     """
     global seen_ids
+
+    # 1. Update real-time live draft feedback for the active kiosk participant
+    draft = fetch_live_draft()
+    if draft:
+        update_touchdesigner_live_draft(draft)
+
+    # 2. Update star constellation table & detect newly submitted stars
     records = fetch_recent_reflections()
     if not records:
         return
 
     update_touchdesigner_table(records)
 
-    # Detect new records
+    # Detect new records (drafts are explicitly filtered out)
     for rec in reversed(records):
         rec_id = rec.get("id")
         if rec_id and rec_id not in seen_ids:
             seen_ids.add(rec_id)
-            if len(seen_ids) > len(records):
+            if len(seen_ids) > len(records) and not rec.get("is_draft") and rec_id != "live_draft":
                 trigger_new_star_event(rec)
 
 

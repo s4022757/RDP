@@ -1,6 +1,8 @@
 # Ignore all PDF files anywhere in the repository
 *.pdf
 
+*.toe
+
 # Ignore one specific Markdown file
 "A3 Final Presentation Brief.md"
 

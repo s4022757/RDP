@@ -34,6 +34,7 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 RECORDS_DIR = os.path.join(SCRIPT_DIR, "records")
 ALL_PATH = os.path.join(RECORDS_DIR, "all_reflections.json")
 LATEST_PATH = os.path.join(RECORDS_DIR, "latest_reflection.json")
+DRAFT_PATH = os.path.join(RECORDS_DIR, "live_draft.json")
 
 os.makedirs(RECORDS_DIR, exist_ok=True)
 
@@ -46,9 +47,23 @@ def write_json_atomic(path, obj):
     os.replace(tmp, path)
 
 
+def clean_record(record):
+    """Remove bloated legacy/visual keys: score_connectedness, score_social_energy, score_collective_empathy, td_*."""
+    if not isinstance(record, dict):
+        return record
+    cleaned = {}
+    for k, v in record.items():
+        if k in ("score_connectedness", "score_social_energy", "score_collective_empathy"):
+            continue
+        if k.startswith("td_"):
+            continue
+        cleaned[k] = v
+    return cleaned
+
+
 def strip_audio(record):
-    """Copy of the record without the heavy base64 audio payload."""
-    return {k: v for k, v in record.items() if k != "response_audio_base64"}
+    """Copy of the record without the heavy base64 audio payload and cleaned of bloated keys."""
+    return {k: v for k, v in clean_record(record).items() if k != "response_audio_base64"}
 
 
 def highest_existing_number():
@@ -121,9 +136,37 @@ class TouchDesignerBridgeHandler(SimpleHTTPRequestHandler):
         if self.path == "/api/latest-reflection":
             self._send_file_or_default(LATEST_PATH, b"{}")
             return
+        if self.path == "/api/live-draft":
+            self._send_file_or_default(DRAFT_PATH, b"{}")
+            return
         super().do_GET()
 
     def do_POST(self):
+        # 1. Real-time Live Draft Feedback Stream (Atomic rename, collision-free)
+        if self.path in ("/api/live-draft", "/api/draft-reflection"):
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                record = json.loads(self.rfile.read(length).decode("utf-8"))
+                if not isinstance(record, dict):
+                    raise ValueError("Body must be a JSON object")
+            except Exception as e:
+                self._send_json(400, {"status": "error", "message": f"Bad request: {e}"})
+                return
+
+            try:
+                draft = clean_record(record)
+                draft["id"] = "live_draft"
+                draft["is_draft"] = True
+                if not draft.get("timestamp"):
+                    draft["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+                write_json_atomic(DRAFT_PATH, draft)
+                self._send_json(200, {"status": "success", "file": "live_draft.json"})
+            except Exception as e:
+                self._send_json(500, {"status": "error", "message": str(e)})
+            return
+
+        # 2. Final Reflection Submission (Light My Star)
         if self.path not in ("/api/save-reflection", "/api/reflection"):
             self.send_response(404)
             self.end_headers()
@@ -139,8 +182,10 @@ class TouchDesignerBridgeHandler(SimpleHTTPRequestHandler):
             return
 
         try:
+            record = clean_record(record)
             record_id = get_next_record_identifier(record)
             record["id"] = record_id
+            record["is_draft"] = False
             if not record.get("timestamp"):
                 record["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
@@ -153,6 +198,13 @@ class TouchDesignerBridgeHandler(SimpleHTTPRequestHandler):
 
             # 2. latest_reflection.json
             write_json_atomic(LATEST_PATH, feed_record)
+
+            # 3. Synchronize live_draft.json so TouchDesigner knows draft is now finalized
+            draft_final = dict(feed_record)
+            draft_final["id"] = record_id
+            draft_final["is_draft"] = False
+            draft_final["is_submitted"] = True
+            write_json_atomic(DRAFT_PATH, draft_final)
 
             # 3. all_reflections.json (newest first, no duplicates, capped)
             all_records = []

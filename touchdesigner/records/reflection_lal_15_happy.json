@@ -1,0 +1,19 @@
+{
+  "id": "lal_15_happy",
+  "timestamp": "2026-10-20T17:05:46.130Z",
+  "kiosk_id": "rmit-swanston-lvl6-booth-01",
+  "feeling_id": "happy",
+  "feeling_label": "Happy",
+  "score_intensity": 5,
+  "score_openness": 5,
+  "score_mind_busyness": 5,
+  "consent_given": true,
+  "prompt_id": "main-library-connection",
+  "prompt_question": "If someone else in the library was feeling the exact same way, what would you want them to hear?",
+  "response_type": "text",
+  "response_text": "isitwok",
+  "response_audio_base64": "",
+  "audio_duration_sec": 0,
+  "char_count": 7,
+  "is_active": true
+}

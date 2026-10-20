@@ -1,0 +1,19 @@
+{
+  "id": "lal_1792382114375_frustrated",
+  "timestamp": "2026-10-20T05:57:30.378Z",
+  "kiosk_id": "rmit-swanston-lvl6-booth-01",
+  "feeling_id": "frustrated",
+  "feeling_label": "Frustrated",
+  "score_intensity": 1,
+  "score_openness": 1,
+  "score_mind_busyness": 1,
+  "consent_given": true,
+  "prompt_id": "main-library-connection",
+  "prompt_question": "If someone else in the library was feeling the exact same way, what would you want them to hear?",
+  "response_type": "text",
+  "response_text": "second most recent",
+  "response_audio_base64": "",
+  "audio_duration_sec": 0,
+  "char_count": 18,
+  "is_active": true
+}
