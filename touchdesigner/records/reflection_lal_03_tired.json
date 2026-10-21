@@ -1,0 +1,20 @@
+{
+  "id": "lal_03_tired",
+  "timestamp": "2026-10-20T22:48:56.817Z",
+  "kiosk_id": "rmit-swanston-lvl6-booth-01",
+  "feeling_id": "tired",
+  "feeling_label": "Tired",
+  "score_intensity": 5,
+  "score_openness": 2,
+  "score_mind_busyness": 5,
+  "consent_given": true,
+  "prompt_id": "alt-gentle-wish",
+  "prompt_question": "If this room could hear one gentle wish for everyone sharing this space right now, what would you say?",
+  "response_type": "text",
+  "response_text": "I love you so much!",
+  "response_audio_base64": "",
+  "audio_duration_sec": 0,
+  "char_count": 19,
+  "is_active": true,
+  "is_draft": false
+}
