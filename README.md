@@ -15,7 +15,7 @@ Upon completion, their reflection instantly lights up an individual **Star** in 
 
 ---
 
-## Key Features & Guidelines (Aligned with "To change.md")
+## Key Features & Guidelines
 
 ### 1. Accessibility & Tone
 - **"No Wrong Answers":** Stated once at the start in warm, plain language: *"There are no wrong answers here. Take whatever time you need."*
@@ -67,41 +67,6 @@ Support links appear at the completion screen regardless of user response:
 - **🌱 Headspace (Youth Mental Health):** `1800 650 890` | `headspace.org.au`
 - **💙 Lifeline (24/7 Crisis Support):** `13 11 14`
 
----
-
-### 5. TouchDesigner Flat Record Format
-```json
-{
-  "id": "lal_1729300000_k3x9",
-  "timestamp": "2026-10-19T05:30:00.000Z",
-  "kiosk_id": "rmit-swanston-lvl6-booth-01",
-  "feeling_id": "calm",
-  "feeling_label": "Calm",
-  "score_intensity": 3,
-  "score_openness": 4,
-  "score_mind_busyness": 2,
-  "consent_given": true,
-  "prompt_id": "main-library-connection",
-  "prompt_question": "If someone else in the library was feeling the exact same way...",
-  "response_type": "text",
-  "response_text": "Take your time. You are doing great.",
-  "td_star_color": "calm",
-  "td_color_hue": 0.48,
-  "td_color_r": 0.18,
-  "td_color_g": 0.83,
-  "td_color_b": 0.75,
-  "td_star_brightness": 0.60,
-  "td_star_scale": 1.40,
-  "td_line_thickness": 3.75,
-  "td_connection_distance": 170,
-  "td_rotation_speed": 18.0,
-  "td_rotation_angle": -30.0,
-  "td_pulse_rate_hz": 0.78,
-  "is_active": true
-}
-```
-
----
 
 ## Quick Start / Running Locally
 

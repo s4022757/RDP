@@ -3,7 +3,6 @@
  * Handles 1-question-per-screen flow, feeling selection, 1-5 scales,
  * rotating prompt bank, audio/text submission, skip option, support links,
  * live constellation background canvas, and kiosk idle timeout reset.
- * Adheres to guidance in "To change.md".
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -492,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await handleSubmission(false);
   });
 
-  // B) Choice to Not Submit (Skip Reflection - from To change.md)
+  // B) Choice to Not Submit 
   btnSkipReflection.addEventListener('click', async () => {
     await handleSubmission(true);
   });

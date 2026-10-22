@@ -2,7 +2,6 @@
  * TouchDesigner Compatibility Layer & Flat Record Formatter
  * Formats kiosk entries into flat, graphics-ready JSON objects
  * specifically engineered for TouchDesigner Web Client DAT and Python scripts.
- * Adheres to guidance in "To change.md".
  */
 
 class TouchDesignerBridge {

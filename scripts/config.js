@@ -140,7 +140,7 @@ const KIOSK_CONFIG = {
     ]
   },
 
-  // Open-Ended Prompt Bank (Main + Alternative Pool from To change.md)
+  // Open-Ended Prompt Bank
   prompts: [
     {
       id: 'main-library-connection',
