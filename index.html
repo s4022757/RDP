@@ -121,6 +121,8 @@
         <div class="step-progress-bar"><div class="step-progress-fill" style="width: 20%;"></div></div>
       </div>
 
+      <div class="star-stage-spacer feeling-stage-spacer" aria-hidden="true"></div>
+
       <div class="question-header">
         <h2 id="q1-heading" class="question-title">How are you feeling right now?</h2>
         <p class="question-subtitle">Choose whatever feels closest. There are no right or wrong answers.</p>
@@ -191,6 +193,8 @@
         <div class="step-progress-bar"><div class="step-progress-fill" style="width: 40%;"></div></div>
       </div>
 
+      <div class="star-stage-spacer scale-stage-spacer" aria-hidden="true"></div>
+
       <div class="question-card">
         <div class="question-header">
           <h2 id="q2-heading" class="question-title">How strongly are you feeling that right now?</h2>
@@ -259,6 +263,8 @@
         <div class="step-progress-bar"><div class="step-progress-fill" style="width: 60%;"></div></div>
       </div>
 
+      <div class="star-stage-spacer scale-stage-spacer" aria-hidden="true"></div>
+
       <div class="question-card">
         <div class="question-header">
           <h2 id="q3-heading" class="question-title">How open do you feel to the people around you right now?</h2>
@@ -326,6 +332,8 @@
         </div>
         <div class="step-progress-bar"><div class="step-progress-fill" style="width: 80%;"></div></div>
       </div>
+
+      <div class="star-stage-spacer scale-stage-spacer" aria-hidden="true"></div>
 
       <div class="question-card">
         <div class="question-header">
@@ -554,15 +562,10 @@
 
     <!-- SCREEN 6: STAR CONFIRMATION & SUPPORT SERVICES -->
     <section id="screen-success" class="kiosk-screen hidden" aria-labelledby="success-heading">
-      <div class="success-card glass-panel">
-        
-        <!-- Live Generated Star Visual (Driven by TouchDesigner parameters) -->
-        <div class="star-preview-chamber">
-          <div id="success-star-aura" class="star-preview-aura"></div>
-          <div id="success-star-orbit" class="star-preview-orbit-ring"></div>
-          <div id="success-star-visual" class="star-preview-core"></div>
-        </div>
+      <!-- Live Star takes center stage in background -->
+      <div class="success-star-stage" aria-hidden="true"></div>
 
+      <div class="success-card glass-panel">
         <h2 id="success-heading" class="screen-title">Your star is glowing in the library.</h2>
         <p class="screen-subtitle">
           Thank you for sharing this quiet moment. Your reflection is now softly woven into the Swanston Library constellation projection.
@@ -661,7 +664,7 @@
         </div>
 
         <p class="success-countdown-pill">
-          Kiosk will reset automatically in <strong id="success-autoreset-timer">20</strong>s for the next student.
+          Kiosk will reset automatically in <strong id="success-autoreset-timer">60</strong>s for the next student.
         </p>
       </div>
     </section>

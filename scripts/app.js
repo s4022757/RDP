@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof StarVisualizer !== 'undefined') {
     try {
       window.starVisualizer = new StarVisualizer('star-webgl-canvas');
+      if (typeof window.starVisualizer.setScreenContext === 'function') {
+        window.starVisualizer.setScreenContext('screen-welcome');
+      }
     } catch (e) {
       console.warn('Could not initialize StarVisualizer:', e);
     }
@@ -450,6 +453,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    if (window.starVisualizer && typeof window.starVisualizer.setScreenContext === 'function') {
+      window.starVisualizer.setScreenContext(screenId);
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
     updateTouchDesignerLivePreview();
   }
@@ -547,8 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Transition to success screen
     goToScreen('screen-success');
 
-    // Trigger 20s auto-reset countdown
-    startSuccessCountdown(20);
+    // Trigger 60s auto-reset countdown
+    startSuccessCountdown(60);
 
     // Trigger visual burst in background constellation canvas
     if (window.constellationBg) {

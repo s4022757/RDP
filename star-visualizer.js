@@ -56,6 +56,13 @@ class StarVisualizer {
       } catch (e) {}
     }
 
+    // Dynamic screen context positioning & scale to share space harmoniously with the UI
+    this.targetCenter = { x: 0.0, y: 0.06 };
+    this.smoothedCenter = { x: 0.0, y: 0.06 };
+    this.targetScaleModifier = 1.0;
+    this.smoothedScaleModifier = 1.0;
+    this.currentScreenContext = 'screen-welcome';
+
     // State matching star_core.py and touchdesigner/poll_script:
     // BRIGHTNESS = (0.25, 1.0)
     // SCALE      = (0.6, 1.6)
@@ -126,6 +133,8 @@ class StarVisualizer {
       uniform float u_gamma;
       uniform float u_scale;
       uniform float u_rotation;
+      uniform vec2 u_centerOffset;
+      uniform float u_scaleModifier;
 
       // Calibration uniforms matching TouchDesigner TOP network
       uniform float u_rectArmLength;
@@ -161,12 +170,12 @@ class StarVisualizer {
       }
 
       void main() {
-        // Centered coordinates with aspect ratio correction
-        // Full height corresponds to [-0.5, +0.5] (1.0 fraction aspect unit)
+        // Centered coordinates with aspect ratio correction and dynamic screen-context offset
         vec2 p = (gl_FragCoord.xy - 0.5 * u_resolution) / min(u_resolution.x, u_resolution.y);
+        p -= u_centerOffset;
 
         // Transform TOP: Scale & Rotation
-        float safeScale = max(0.01, u_scale);
+        float safeScale = max(0.01, u_scale * u_scaleModifier);
         p = p / safeScale;
         p = rotate2D(p, u_rotation);
 
@@ -196,16 +205,26 @@ class StarVisualizer {
         // Level TOP: Brightness & Gamma
         float luminance = pow(max(0.0, totalLuminance * u_brightness), 1.0 / max(0.01, u_gamma));
 
-        // Switch / Constant TOP: Emotion coloring
-        // High-luminance core whitening for stellar core
-        float whiteHot = clamp((luminance - 0.8) * u_coreWhiteHot, 0.0, 1.0);
-        vec3 starColor = mix(u_color, vec3(1.0), whiteHot);
+        // 1. Calculate perceived luminance of the active palette color
+        float colorLuma = dot(u_color, vec3(0.2126, 0.7152, 0.0722));
 
-        // Premultiplied alpha output for clean WebGL compositing
-        vec3 finalRgb = starColor * luminance;
-        float alpha = clamp(luminance, 0.0, 1.0);
+        // 2. Luminance equalisation factor:
+        // Equalises the perceived energy of dark hues (Red, Blue, Purple) against Yellow & White
+        // without completely washing out the color saturation.
+        float lumaCompensation = pow(clamp(colorLuma, 0.15, 1.0), -0.65);
+        vec3 balancedColor = u_color * lumaCompensation;
 
-        gl_FragColor = vec4(finalRgb, alpha);
+        // 3. Highlight core whitening (White-hot core at the peak)
+        float whiteHot = clamp((luminance - 0.75) * u_coreWhiteHot, 0.0, 1.0);
+        vec3 starColor = mix(balancedColor, vec3(1.0), whiteHot);
+
+        // 4. Tone-mapping & soft compression to prevent White & Yellow from clipping/burning
+        vec3 hdrColor = starColor * luminance;
+        vec3 toneMappedRgb = hdrColor / (hdrColor + vec3(1.0)); // Soft Reinhard curve
+
+        // 5. Premultiplied alpha output
+        float alpha = clamp(luminance * 1.2, 0.0, 1.0);
+        gl_FragColor = vec4(toneMappedRgb * alpha, alpha);
       }
     `;
 
@@ -233,6 +252,8 @@ class StarVisualizer {
       gamma: gl.getUniformLocation(program, 'u_gamma'),
       scale: gl.getUniformLocation(program, 'u_scale'),
       rotation: gl.getUniformLocation(program, 'u_rotation'),
+      centerOffset: gl.getUniformLocation(program, 'u_centerOffset'),
+      scaleModifier: gl.getUniformLocation(program, 'u_scaleModifier'),
       rectArmLength: gl.getUniformLocation(program, 'u_rectArmLength'),
       rectArmWidth: gl.getUniformLocation(program, 'u_rectArmWidth'),
       rectBlur: gl.getUniformLocation(program, 'u_rectBlur'),
@@ -262,6 +283,35 @@ class StarVisualizer {
     this.canvas.width = window.innerWidth * dpr;
     this.canvas.height = window.innerHeight * dpr;
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  setScreenContext(screenId) {
+    this.currentScreenContext = screenId;
+    // Dynamically adjust star center and scale to harmoniously share space with UI:
+    // In WebGL aspect coordinates, +Y moves the star upward into dedicated open space.
+    if (screenId === 'screen-welcome') {
+      this.targetCenter = { x: 0.0, y: 0.05 };
+      this.targetScaleModifier = 1.0;
+    } else if (screenId === 'screen-q1-feeling') {
+      // Crowns the feelings grid above the cards
+      this.targetCenter = { x: 0.0, y: 0.17 };
+      this.targetScaleModifier = 0.95;
+    } else if (screenId === 'screen-q2-intensity' || screenId === 'screen-q3-openness' || screenId === 'screen-q4-mind') {
+      // Unobstructed upper stage: clearly visible above sliders and cards
+      this.targetCenter = { x: 0.0, y: 0.19 };
+      this.targetScaleModifier = 0.92;
+    } else if (screenId === 'screen-open-ended') {
+      // Subtle ambient background while user writes/records
+      this.targetCenter = { x: 0.0, y: 0.02 };
+      this.targetScaleModifier = 0.85;
+    } else if (screenId === 'screen-success') {
+      // Center stage star at the top of the success view
+      this.targetCenter = { x: 0.0, y: 0.22 };
+      this.targetScaleModifier = 1.30;
+    } else {
+      this.targetCenter = { x: 0.0, y: 0.08 };
+      this.targetScaleModifier = 1.0;
+    }
   }
 
   updateFromRecord(record) {
@@ -303,6 +353,12 @@ class StarVisualizer {
     this.smoothedState.rot_tilt += (this.targetState.rot_tilt - this.smoothedState.rot_tilt) * factor;
     this.smoothedState.emo = this.targetState.emo;
 
+    // Smooth layout transitions (10 Hz smoothing)
+    const layoutFactor = 1.0 - Math.exp(-dt * 10.0);
+    this.smoothedCenter.x += (this.targetCenter.x - this.smoothedCenter.x) * layoutFactor;
+    this.smoothedCenter.y += (this.targetCenter.y - this.smoothedCenter.y) * layoutFactor;
+    this.smoothedScaleModifier += (this.targetScaleModifier - this.smoothedScaleModifier) * layoutFactor;
+
     // Speed CHOP emulation: integrate continuous degrees per second
     this.currentRotationZ += (this.smoothedState.rot_speed * (Math.PI / 180.0)) * dt;
     const totalRotationRad = this.currentRotationZ + (this.smoothedState.rot_tilt * (Math.PI / 180.0));
@@ -320,6 +376,10 @@ class StarVisualizer {
     gl.uniform1f(this.uniforms.gamma, this.smoothedState.gamma);
     gl.uniform1f(this.uniforms.scale, this.smoothedState.scale);
     gl.uniform1f(this.uniforms.rotation, totalRotationRad);
+
+    // Dynamic layout uniforms
+    gl.uniform2f(this.uniforms.centerOffset, this.smoothedCenter.x, this.smoothedCenter.y);
+    gl.uniform1f(this.uniforms.scaleModifier, this.smoothedScaleModifier);
 
     // Dynamic TouchDesigner TOP calibration uniforms
     gl.uniform1f(this.uniforms.rectArmLength, this.config.rectArmLength);
