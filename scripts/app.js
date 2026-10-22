@@ -18,6 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- AMBIENT SOUNDSCAPE (Looping M4A with WebM Opus fallback) ---
+  if (typeof AmbientSoundscape !== 'undefined') {
+    try {
+      window.ambientSoundscape = new AmbientSoundscape({
+        m4aSrc: './audio/soundscape_loop.m4a',
+        webmSrc: './audio/soundscape_loop.webm',
+        volume: 0.50
+      });
+    } catch (e) {
+      console.warn('Could not initialize AmbientSoundscape:', e);
+    }
+  }
+
   // --- APPLICATION STATE ---
   const state = {
     currentScreen: 'screen-welcome',
@@ -358,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnStartRecord) {
       btnStartRecord.addEventListener('click', () => {
         if (audioErrorMessage) audioErrorMessage.classList.add('hidden');
+        if (window.ambientSoundscape) window.ambientSoundscape.duck(true);
         audioRecorder.startRecording();
       });
     }
@@ -365,12 +379,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnStopRecord) {
       btnStopRecord.addEventListener('click', () => {
         audioRecorder.stopRecording();
+        if (window.ambientSoundscape) window.ambientSoundscape.duck(false);
       });
     }
 
     if (btnRerecord) {
       btnRerecord.addEventListener('click', () => {
         audioRecorder.cancelRecording();
+        if (window.ambientSoundscape) window.ambientSoundscape.duck(false);
         if (audioPlayer) {
           audioPlayer.pause();
           audioPlayer.src = '';
@@ -464,6 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Navigation Event Listeners (One question per screen)
   btnBegin.addEventListener('click', () => {
     if (window.soundEngine) window.soundEngine.init();
+    if (window.ambientSoundscape) window.ambientSoundscape.start();
     goToScreen('screen-q1-feeling');
   });
 
@@ -721,13 +738,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnToggleSound.addEventListener('click', () => {
+    let isMuted = false;
     if (window.soundEngine) {
-      const isMuted = window.soundEngine.toggleMute();
-      btnToggleSound.innerHTML = isMuted 
-        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
-        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
-      btnToggleSound.setAttribute('aria-label', isMuted ? 'Unmute Sound' : 'Mute Sound');
+      isMuted = window.soundEngine.toggleMute();
     }
+    if (window.ambientSoundscape) {
+      window.ambientSoundscape.setMuted(isMuted);
+    }
+    btnToggleSound.innerHTML = isMuted 
+      ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
+      : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+    btnToggleSound.setAttribute('aria-label', isMuted ? 'Unmute Sound' : 'Mute Sound');
   });
 
   btnFullscreen.addEventListener('click', () => {

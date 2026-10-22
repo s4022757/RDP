@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
   './scripts/supabase-client.js',
   './scripts/touchdesigner-bridge.js',
   './scripts/sound-effects.js',
+  './scripts/soundscape.js',
   './star-visualizer.js',
   './scripts/app.js',
   './manifest.webmanifest',

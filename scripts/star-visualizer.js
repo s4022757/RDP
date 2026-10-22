@@ -27,34 +27,28 @@ class StarVisualizer {
       return;
     }
 
-    // Default calibration parameters matching TouchDesigner TOP network from visualCalibrationNotes.md:
-    // Rectangles: size x = 0.5 aspect (half-length 0.25), size y = 0.01 aspect (half-width 0.005)
-    // Blur on rectangles: Gaussian, pre-shrink 2, filter size 10 (sigma ~0.022)
-    // Circle halo: radius = 0.2 aspect, blur: Gaussian, pre-shrink 8, filter size 12 (sigma ~0.12, aura intensity 0.22)
-    // Circle central: radius = 0.05 aspect, no blur (crisp solid core)
-    // Comp order (Add): rectY + rectX + halo + central
-    this.config = {
-      rectArmLength: 0.25,   // TD Rect TOP size x: 0.5 fraction aspect -> half-length 0.25
-      rectArmWidth: 0.005,   // TD Rect TOP size y: 0.01 fraction aspect -> half-width 0.005
-      rectBlur: 0.022,       // TD Blur TOP on rects: Gaussian, Pre-shrink 2, Filter 10
-      rectIntensity: 2.2,    // Rect arm intensity multiplier (yields optical flare peak ~0.40)
-      haloRadius: 0.18,      // TD Circle TOP (halo): Radius ~0.2 fraction aspect
-      haloBlur: 0.12,        // TD Blur TOP on halo: Gaussian, Pre-shrink 8, Filter 12
-      haloIntensity: 0.22,   // Halo ambient aura intensity (soft, translucent glow)
-      centralRadius: 0.05,   // TD Circle TOP (central): Radius 0.05 fraction aspect, NO blur
-      coreWhiteHot: 0.50     // Core highlight whitening factor for intense stellar center
-    };
+    // Locked-in production calibration defaults (TouchDesigner TOP network replica):
+    this.defaultConfig = Object.freeze({
+      rectArmLength: 0.345,
+      rectArmWidth: 0.009,
+      rectBlur: 0.043,
+      rectIntensity: 1.0,
+      haloRadius: 0.16,
+      haloBlur: 0.06,
+      haloIntensity: 0.62,
+      centralRadius: 0.035,
+      coreWhiteHot: 0.3
+    });
 
-    // Load persisted calibration if saved previously (v3 format)
-    const savedConfig = localStorage.getItem('LAL_STAR_CALIBRATION_V3');
-    if (savedConfig) {
-      try {
-        const parsed = JSON.parse(savedConfig);
-        if (parsed.rectArmLength !== undefined && parsed.haloIntensity !== undefined) {
-          Object.assign(this.config, parsed);
-        }
-      } catch (e) {}
-    }
+    // Active session configuration starts with locked-in values on every visit
+    this.config = { ...this.defaultConfig };
+
+    // Clear legacy persisted calibrations so fresh visits always default to locked-in values
+    try {
+      localStorage.removeItem('LAL_STAR_CALIBRATION_V3');
+      localStorage.removeItem('LAL_STAR_CALIBRATION_V2');
+      localStorage.removeItem('LAL_STAR_CALIBRATION');
+    } catch (e) {}
 
     // Dynamic screen context positioning & scale to share space harmoniously with the UI
     this.targetCenter = { x: 0.0, y: 0.06 };
@@ -489,7 +483,7 @@ class StarVisualizer {
       });
     });
 
-    // Sliders event listeners
+    // Sliders event listeners (temporary cosmetic tweaks for active session)
     fields.forEach(f => {
       const slider = document.getElementById(`slider-${f.key}`);
       const valDisplay = document.getElementById(`val-${f.key}`);
@@ -498,7 +492,6 @@ class StarVisualizer {
           const val = parseFloat(e.target.value);
           this.config[f.key] = val;
           valDisplay.textContent = val;
-          localStorage.setItem('LAL_STAR_CALIBRATION_V3', JSON.stringify(this.config));
         });
       }
     });
@@ -507,14 +500,22 @@ class StarVisualizer {
 
     document.getElementById('btn-copy-config').onclick = () => {
       navigator.clipboard.writeText(JSON.stringify(this.config, null, 2));
-      alert('Config JSON copied to clipboard! Paste this into star-visualizer.js when satisfied.');
+      alert('Config JSON copied to clipboard!');
     };
 
     document.getElementById('btn-reset-config').onclick = () => {
-      localStorage.removeItem('LAL_STAR_CALIBRATION_V3');
-      localStorage.removeItem('LAL_STAR_CALIBRATION_V2');
-      localStorage.removeItem('LAL_STAR_CALIBRATION');
-      location.reload();
+      try {
+        localStorage.removeItem('LAL_STAR_CALIBRATION_V3');
+        localStorage.removeItem('LAL_STAR_CALIBRATION_V2');
+        localStorage.removeItem('LAL_STAR_CALIBRATION');
+      } catch (e) {}
+      Object.assign(this.config, this.defaultConfig);
+      fields.forEach(f => {
+        const slider = document.getElementById(`slider-${f.key}`);
+        const valDisplay = document.getElementById(`val-${f.key}`);
+        if (slider) slider.value = this.defaultConfig[f.key];
+        if (valDisplay) valDisplay.textContent = this.defaultConfig[f.key];
+      });
     };
   }
 }

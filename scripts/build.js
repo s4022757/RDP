@@ -26,7 +26,8 @@ const targets = [
   'star-visualizer.js',
   'icons',
   'styles',
-  'scripts'
+  'scripts',
+  'audio'
 ];
 
 for (const target of targets) {
