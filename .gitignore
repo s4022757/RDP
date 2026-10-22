@@ -6,7 +6,15 @@
 .AppleDouble
 
 .env
+.env*
+.env.local
 
 node_modules/
 touchdesigner/records/
 *.tmp
+dist/
+__pycache__/
+*.pyc
+*.log
+.wrangler/
+
