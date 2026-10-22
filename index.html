@@ -22,8 +22,9 @@
 </head>
 <body>
 
-  <!-- Background Interactive Constellation Canvas -->
+  <!-- Background Interactive Constellation Canvas & WebGL TouchDesigner Star -->
   <canvas id="constellation-bg" aria-hidden="true"></canvas>
+  <canvas id="star-webgl-canvas" aria-hidden="true"></canvas>
   <div class="ambient-glow-overlay" aria-hidden="true"></div>
 
   <!-- Main Kiosk App Viewport -->
@@ -735,6 +736,7 @@
       </div>
 
       <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button id="btn-open-calibrator" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">✨ Tweak Star Visuals (Calibrator)</button>
         <button id="btn-copy-json" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">Copy Flat JSON</button>
         <button id="btn-copy-python" class="btn btn-secondary" style="font-size: 0.85rem;" type="button">Copy TouchDesigner Python Script</button>
       </div>
@@ -777,6 +779,7 @@
   <script src="./scripts/touchdesigner-bridge.js"></script>
   <script src="./scripts/local-output-handler.js"></script>
   <script src="./scripts/supabase-client.js"></script>
+  <script src="./star-visualizer.js"></script>
   <script src="./scripts/app.js"></script>
 </body>
 </html>

@@ -23,6 +23,7 @@ const targets = [
   'index.html',
   'manifest.webmanifest',
   'sw.js',
+  'star-visualizer.js',
   'icons',
   'styles',
   'scripts'

@@ -6,6 +6,15 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- WEBGL STAR VISUALIZER (TouchDesigner TOP Network Replica) ---
+  if (typeof StarVisualizer !== 'undefined') {
+    try {
+      window.starVisualizer = new StarVisualizer('star-webgl-canvas');
+    } catch (e) {
+      console.warn('Could not initialize StarVisualizer:', e);
+    }
+  }
+
   // --- APPLICATION STATE ---
   const state = {
     currentScreen: 'screen-welcome',
@@ -550,6 +559,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderSuccessScreen(payload, submitResult) {
+    if (window.starVisualizer) {
+      window.starVisualizer.updateFromRecord(payload);
+    }
+
     const feeling = TouchDesignerBridge.getFeelingConfig(payload.feeling_id);
     const visual = TouchDesignerBridge.computeVisualParameters({
       feeling: payload.feeling_id,
@@ -725,6 +738,28 @@ document.addEventListener('DOMContentLoaded', () => {
     supabaseKeyInput.value = window.supabaseHandler.anonKey || '';
     updateQueueCountDisplay();
     updateTouchDesignerLivePreview();
+    if (window.starVisualizer && typeof window.starVisualizer.mountToolkit === 'function') {
+      window.starVisualizer.mountToolkit();
+    }
+  });
+
+  // Dedicated button to mount TouchDesigner Star Visualizer Calibrator
+  const btnOpenCalibrator = document.getElementById('btn-open-calibrator');
+  if (btnOpenCalibrator) {
+    btnOpenCalibrator.addEventListener('click', () => {
+      if (window.starVisualizer && typeof window.starVisualizer.mountToolkit === 'function') {
+        window.starVisualizer.mountToolkit();
+      }
+    });
+  }
+
+  // Keyboard shortcut: Shift + D to open Star Visualizer Calibrator Toolkit
+  window.addEventListener('keydown', (e) => {
+    if (e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+      if (window.starVisualizer && typeof window.starVisualizer.mountToolkit === 'function') {
+        window.starVisualizer.mountToolkit();
+      }
+    }
   });
 
   btnCloseDevModal.addEventListener('click', () => {
@@ -865,6 +900,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Stream live draft to TouchDesigner with debouncing to prevent UI lag or collisions
     if (window.localOutputHandler && typeof window.localOutputHandler.sendLiveDraft === 'function') {
       window.localOutputHandler.sendLiveDraft(draftRecord);
+    }
+
+    // Update real-time WebGL star visualizer (TouchDesigner TOP network replica)
+    if (window.starVisualizer) {
+      window.starVisualizer.updateFromRecord(draftRecord);
     }
   }
 
