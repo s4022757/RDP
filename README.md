@@ -31,7 +31,7 @@ Upon completion, their reflection instantly lights up an individual **Star** in 
 - **Q1: Emotion / Feeling**
   > *"How are you feeling right now?"*
   - Options: **Happy**, **Calm**, **Tired**, **Anxious**, **Sad**, **Frustrated** (Word + Icon).
-  - Determines star color palette (Amber, Teal, Lavender, Cyan, Indigo, Coral).
+  - Determines star color palette: **Happy** (Yellow), **Calm** (White), **Tired** (Red), **Anxious** (Purple), **Sad** (Blue), **Frustrated** (Orange).
 
 - **Q2: Star Intensity (1 to 5)**
   > *"How strongly are you feeling that right now?"*
@@ -50,13 +50,26 @@ Upon completion, their reflection instantly lights up an individual **Star** in 
 
 ---
 
-### 3. Open-Ended Prompt & User Choice
-- **Main Prompt:**
-  > *"If someone else in the library was feeling the exact same way, what would you want them to hear?"*  
-  > *Guidance: You can share a thought, a piece of advice, reassurance, or something you wish someone told you today.*
-- **Alternative Pool (8 prompts):** Cycle through gentle, grounding questions with the **"Cycle prompt ↺"** button.
-- **Short Consent Line:** Prominently displayed before response input:
-  > *"By sharing your reflection, you agree that your anonymous words or voice recording may be softly projected in the library installation. No names or personal identifiers are ever collected or stored."*
+### 3. Open-Ended Prompt & Rotating Question Bank
+
+Students can attach their words to their star via 300-character text or a 30-second voice note, or choose **"Skip reflection & light star without words"**. 
+
+Using the **"Different question"** button, students can cycle through a rotating bank of 9 gentle, grounding reflective prompts:
+
+| # | Theme & Tag | Prompt Question | Guidance / Subtext |
+|---|---|---|---|
+| 1 | 💬 **Shared Experience** | *"If someone else in the library was feeling the exact same way, what would you want them to hear?"* | You can share a thought, a piece of advice, reassurance, or something you wish someone told you today. |
+| 2 | 🕊️ **Words of Warmth** | *"If someone else felt the way you do right now, what would you want them to hear?"* | A gentle sentence can travel far across this room. |
+| 3 | 🌱 **Quiet Truths** | *"What do you wish you could say out loud right now without anyone judging?"* | A silent thought, a pressure you're feeling, or an honest reflection on your day. |
+| 4 | ✨ **Encouragement** | *"If you could share some words of encouragement with someone else in the library today, what would it be?"* | A quick reminder that we're all figuring it out together. |
+| 5 | 📖 **Inner Reflection** | *"What is one quiet thought you've been carrying with you today as you study?"* | A phrase, a memory, or a lingering question. |
+| 6 | ☕ **Mindful Pause** | *"What does a moment of peace feel like to you in the middle of a busy university week?"* | A breath, looking out the window, or closing your laptop. |
+| 7 | 🌟 **Collective Hope** | *"If this room could hear one gentle wish for everyone sharing this space right now, what would you say?"* | Sending goodwill to fellow students. |
+| 8 | 🍵 **Simple Comforts** | *"What is something that helped ground you recently? It could be a sound, a sight, a memory or even a cup of tea!"* | Small anchors that bring us back to calm. |
+| 9 | 🏡 **Safe Haven** | *"What is your happy place?"* | A corner of the city, a favourite spot at home, or a memory. |
+
+- **Short Consent Notice:** Prominently displayed before response input:
+  > *"By sharing your reflection, you agree that your anonymous words or voice recording may be softly projected in the library installation. No names, student IDs, or personal identifiers are ever collected or stored."*
 - **Choice to Not Submit Words:** Clear option **"Skip reflection & light star without words"** allows students to participate and generate their star without writing or recording if they prefer.
 
 ---
