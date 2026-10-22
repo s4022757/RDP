@@ -6,3 +6,7 @@
 .AppleDouble
 
 .env
+
+node_modules/
+touchdesigner/records/
+*.tmp
