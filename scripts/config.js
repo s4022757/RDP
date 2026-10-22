@@ -22,69 +22,72 @@ const KIOSK_CONFIG = {
   reassuranceNotice: "There are no wrong answers here. Take whatever time you need.",
 
   // Question 1: Emotional Feeling (Never encoded in colour alone - uses word plus icon)
-  // Palettes harmonized with the styleguide duos:
-  // Variant 1: #102D37 Core & #ECF8C0 Accent (Lime)
-  // Variant 2: #528B90 Core & #D2F7F9 Accent (Ice Cyan)
-  // Variant 3: #255953 Core & #8C9E50 Accent (Olive)
+  // Emotion Palettes strictly aligned with TouchDesigner TOP Constant colors (visualCalibrationNotes.md):
+  // Happy: Yellow (0.913725, 1.0, 0.0)
+  // Calm: Default White / Uncoloured (1.0, 1.0, 1.0)
+  // Tired: Red (0.5, 0.0, 0.0)
+  // Anxious: Purple (0.3739, 0.0, 0.552)
+  // Sad: Blue (0.0, 0.1843, 1.0)
+  // Frustrated: Orange (1.0, 0.5450, 0.0)
   feelings: [
     {
       id: 'happy',
       label: 'Happy',
       icon: '😊',
-      colorName: 'Starlight Lime',
-      hue: 0.19,
-      rgb: [0.925, 0.973, 0.753],
-      cssColor: '#ECF8C0',
+      colorName: 'Yellow',
+      hue: 0.18,
+      rgb: [0.913725, 1.0, 0.0],
+      cssColor: '#E9FF00',
       description: 'Lighter, uplifted, or content'
     },
     {
       id: 'calm',
       label: 'Calm',
       icon: '😌',
-      colorName: 'Ice Starlight',
+      colorName: 'Default White',
       hue: 0.51,
-      rgb: [0.824, 0.969, 0.977],
-      cssColor: '#D2F7F9',
+      rgb: [1.0, 1.0, 1.0],
+      cssColor: '#FFFFFF',
       description: 'Grounded, peaceful, or steady'
     },
     {
       id: 'tired',
       label: 'Tired',
       icon: '🥱',
-      colorName: 'Muted Slate Teal',
-      hue: 0.51,
-      rgb: [0.322, 0.545, 0.565],
-      cssColor: '#528B90',
+      colorName: 'Red',
+      hue: 0.0,
+      rgb: [0.5, 0.0, 0.0],
+      cssColor: '#800000',
       description: 'Low battery, drained, or sleepy'
     },
     {
       id: 'anxious',
       label: 'Anxious',
       icon: '😰',
-      colorName: 'Eucalyptus Teal',
-      hue: 0.47,
-      rgb: [0.145, 0.349, 0.325],
-      cssColor: '#255953',
+      colorName: 'Purple',
+      hue: 0.77,
+      rgb: [0.3739, 0.0, 0.552],
+      cssColor: '#5F008D',
       description: 'On edge, fluttery, or uneasy'
     },
     {
       id: 'sad',
       label: 'Sad',
       icon: '😔',
-      colorName: 'Quiet Midnight Teal',
-      hue: 0.54,
-      rgb: [0.063, 0.177, 0.216],
-      cssColor: '#102D37',
+      colorName: 'Blue',
+      hue: 0.64,
+      rgb: [0.0, 0.1843, 1.0],
+      cssColor: '#002FFF',
       description: 'Heavy, quiet, or holding something'
     },
     {
       id: 'frustrated',
       label: 'Frustrated',
       icon: '😤',
-      colorName: 'Olive Chartreuse',
-      hue: 0.21,
-      rgb: [0.549, 0.620, 0.314],
-      cssColor: '#8C9E50',
+      colorName: 'Orange',
+      hue: 0.09,
+      rgb: [1.0, 0.5450, 0.0],
+      cssColor: '#FF8B00',
       description: 'Stuck, overwhelmed, or annoyed'
     }
   ],

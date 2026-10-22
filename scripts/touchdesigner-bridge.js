@@ -14,15 +14,18 @@ class TouchDesignerBridge {
       id: 'calm',
       label: 'Calm',
       icon: '😌',
-      colorName: 'Ice Starlight',
+      colorName: 'Default White',
       hue: 0.51,
-      rgb: [0.824, 0.969, 0.977],
-      cssColor: '#D2F7F9'
+      rgb: [1.0, 1.0, 1.0],
+      cssColor: '#FFFFFF'
     };
   }
 
   /**
-   * Computes normalized TouchDesigner visual parameters
+   * Computes normalized TouchDesigner visual parameters matching touchdesigner/poll_script:
+   * BRIGHTNESS = (0.25, 1.0)
+   * SCALE      = (0.6, 1.6)
+   * ROT_SPEED  = (3.0, 45.0) deg/s
    */
   static computeVisualParameters(data) {
     const feeling = this.getFeelingConfig(data.feeling);
@@ -30,28 +33,25 @@ class TouchDesignerBridge {
     const openness = Math.max(1, Math.min(5, parseInt(data.openness, 10) || 3));
     const mind = Math.max(1, Math.min(5, parseInt(data.mindBusyness, 10) || 3));
 
-    // 1. Color from Q1 Feeling: Hue, RGB and Named Palette
+    // 1. Color from Q1 Feeling: Hue, RGB and Named Palette (visualCalibrationNotes.md)
     const td_star_color = feeling.id;
     const td_color_hue = feeling.hue;
     const [r, g, b] = feeling.rgb;
 
-    // 2. Star Intensity & Brightness: Driven by Q2 Intensity (1-5 -> 0.20 to 1.00)
-    const td_star_brightness = Math.round((0.20 + ((intensity - 1) / 4) * 0.80) * 1000) / 1000;
+    // 2. Star Intensity & Brightness: Driven by Q2 Intensity (1-5 -> 0.25 to 1.00 matching TD poll_script)
+    const td_star_brightness = Math.round((0.25 + ((intensity - 1) / 4) * 0.75) * 1000) / 1000;
 
-    // 3. Scale & Presence: Driven by Q3 Openness (1-5)
-    // Scale: 0.8 to 2.4
-    const td_star_scale = Math.round((0.8 + ((openness - 1) / 4) * 1.6) * 100) / 100;
+    // 3. Scale & Presence: Driven by Q3 Openness (1-5 -> 0.60 to 1.60 matching TD poll_script)
+    const td_star_scale = Math.round((0.60 + ((openness - 1) / 4) * 1.00) * 100) / 100;
     // Constellation Line Thickness: 1.0 to 6.0 px
     const td_line_thickness = Math.round((1.0 + ((openness - 1) / 4) * 5.0) * 100) / 100;
     // Proximity connection distance: 70 to 270 px
     const td_connection_distance = Math.round(70 + ((openness - 1) / 4) * 200);
 
-    // 4. Rotation & Orientation: Driven by Q4 Mind Busyness (1-5)
-    // "keep the rotation range wide enough to read at a distance in the installation"
-    // Rotation speed in deg/s: 4 deg/s (serene) to 75 deg/s (swirling)
-    const td_rotation_speed = Math.round((4.0 + ((mind - 1) / 4) * 71.0) * 10) / 10;
-    // Static orientation tilt in degrees: -60 deg to +60 deg
-    const td_rotation_angle = Math.round((-60.0 + ((mind - 1) / 4) * 120.0) * 10) / 10;
+    // 4. Rotation & Orientation: Driven by Q4 Mind Busyness (1-5 -> 3.0 to 45.0 deg/s matching TD poll_script)
+    const td_rotation_speed = Math.round((3.0 + ((mind - 1) / 4) * 42.0) * 10) / 10;
+    // Static orientation tilt in degrees: -45 deg to +45 deg
+    const td_rotation_angle = Math.round((-45.0 + ((mind - 1) / 4) * 90.0) * 10) / 10;
     // Starlight pulse rate: 0.3 Hz to 2.2 Hz
     const td_pulse_rate_hz = Math.round((0.3 + ((mind - 1) / 4) * 1.9) * 100) / 100;
 
