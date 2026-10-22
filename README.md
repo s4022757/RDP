@@ -1,18 +1,31 @@
-# Libraries Against Loneliness • Reflect & Connect
+# Libraries Against Loneliness • Constellate: Reflect & Connect
 ### Responsive PWA Kiosk & TouchDesigner Generative Installation
 **Site:** RMIT Swanston Library Level 6 Wellbeing Installation  
-**Authors:** Digital Media Studio 3 Project Team
+**Authors:** Curtis Cox, Akira Lordsmith, Sabrina Tanamas, Cole Milott
 
 ---
 
 ## Overview
 
-**Libraries Against Loneliness ("Reflect & Connect")** is an interactive, responsive Progressive Web App (PWA) kiosk engineered for a dedicated wellbeing booth in RMIT Swanston Library (Level 6). 
+**Constellate: Reflect & Connect** is an interactive, responsive Progressive Web App (PWA) kiosk engineered for a proposed dedicated wellbeing booth in RMIT Swanston Library (Level 6). 
 
 The installation allows students to take a 60-second pause during high-stress study periods, privately assess their emotional feeling and energy state across four dedicated, one-question-per-screen steps, and optionally leave an anonymous reflection (via 300-character text, 30-second voice recording, or skipping without words).
 
-Upon completion, their reflection instantly lights up an individual **Star** in a generative audiovisual constellation projected beside the booth, powered in real time by **TouchDesigner** via **Supabase**.
+As participants reflect, an individual Star forms in real time on the kiosk interface via WebGL. Upon submission, their star joins the larger generative audiovisual constellation cast into the library space, driven in real time by TouchDesigner via Supabase.
 
+---
+
+## System Architecture
+
+The project operates across a flexible **dual-pipeline architecture**:
+
+1. **Client-Side Real-Time Feedback (WebGL / Canvas):**  
+   A custom WebGL fragment shader (`star-visualizer.js`) reproduces the TouchDesigner 2D TOP network (`Rectangle/Circle` → `Blur` → `Comp` → `Select` → `Constant` → `Switch` → `Level` → `Transform`) directly within the browser, complete with continuous spin integration and luminance equalization across all emotion colors.
+2. **Installation Projection (TouchDesigner):**  
+   Final reflection records trigger large-scale generative projection mapping and ambisonic audio in the physical installation space.
+   - **Mode 0 (Local Exhibition Bridge):** The PWA streams draft state to `local_bridge_server.py` on `localhost:8080`, writing zero-latency state to `live_draft.json` for live TouchDesigner parameter smoothing.
+   - **Mode 1 (Cloud / Remote Testing):** Deployed statically via Cloudflare Pages, the PWA writes directly to Supabase (`public.reflections`), where TouchDesigner’s polling DAT ingests new records in real time.
+  
 ---
 
 ## Key Features & Guidelines
@@ -21,8 +34,9 @@ Upon completion, their reflection instantly lights up an individual **Star** in 
 - **"No Wrong Answers":** Stated once at the start in warm, plain language: *"There are no wrong answers here. Take whatever time you need."*
 - **One Question Per Screen:** Each question is presented on its own focused screen with a clear progress indicator (`Step X of 5`).
 - **Meaning Never Encoded in Colour Alone:** Q1 utilizes word plus icon for each emotion (`😊 Happy`, `😌 Calm`, `🥱 Tired`, `😰 Anxious`, `😔 Sad`, `😤 Frustrated`). The star's colour is an expressive output, not an input requirement.
-- **Large Tap Targets:** Minimum $48\text{px}$ to $80\text{px}$ touch targets for seamless public kiosk interaction.
+- **Large Tap Targets:** Minimum 48px to 80px touch targets for seamless public kiosk interaction.
 - **`prefers-reduced-motion` Support:** Smoothly reduces animations, particle velocities, and rotational spins for users who prefer reduced motion.
+- **Gapless Ambient Soundscape:** Features an optimized web-standard ambient audio loop by Cole Milott that fades in seamlessly on interaction.
 
 ---
 
@@ -32,21 +46,21 @@ Upon completion, their reflection instantly lights up an individual **Star** in 
   > *"How are you feeling right now?"*
   - Options: **Happy**, **Calm**, **Tired**, **Anxious**, **Sad**, **Frustrated** (Word + Icon).
   - Determines star color palette: **Happy** (Yellow), **Calm** (White), **Tired** (Red), **Anxious** (Purple), **Sad** (Blue), **Frustrated** (Orange).
-
+ 
 - **Q2: Star Intensity (1 to 5)**
   > *"How strongly are you feeling that right now?"*
   - Scale: `1 • Barely there` · `2 • A little` · `3 • Moderate` · `4 • Quite strong` · `5 • Very strong`
-  - Determines star luminosity & brightness ($20\%$ to $100\%$).
+  - Determines star luminosity & brightness (25% to 100% range; normalized 0.25 to 1.0).
 
 - **Q3: Scale & Presence (1 to 5)**
   > *"How open do you feel to the people around you right now?"*
   - Scale: `1 • Turned inward` · `2 • A little busy` · `3 • Somewhere in between` · `4 • Fairly open` · `5 • Get amongst it!`
-  - Determines star scale ($0.8$ to $2.4$) and constellation line thickness ($1.0$ to $6.0\text{px}$).
+  - Determines star scale ($0.5$ to $1.5$) and constellation line thickness ($1.0$ to $6.0\text{px}$).
 
 - **Q4: Rotation & Orientation (1 to 5)**
   > *"How busy does your mind feel right now?"*
   - Scale: `1 • Very quiet` · `2 • Mostly quiet` · `3 • In between` · `4 • Quite busy` · `5 • Racing`
-  - Determines orbit/rotation speed ($4^\circ/\text{s}$ to $75^\circ/\text{s}$) and orientation tilt ($-60^\circ$ to $+60^\circ$), kept wide enough to read clearly at a distance in the installation.
+  - Determines orbit/rotation speed ($3^\circ/\text{s}$ to $45^\circ/\text{s}$) and orientation tilt ($0^\circ$ to $55^\circ$ askew), kept wide enough to read clearly at a distance in the installation.
 
 ---
 
@@ -81,13 +95,29 @@ Support links appear at the completion screen regardless of user response:
 - **💙 Lifeline (24/7 Crisis Support):** `13 11 14`
 
 
-## Quick Start / Running Locally
+## Quick Start
 
-1. **Serve locally:**
+### Mode 0: Local Exhibition Setup (TouchDesigner + Bridge Server)
+For live on-site physical kiosk exhibition with real-time parameter streaming to TouchDesigner:
+
+### 
+1. **Launch the local Python bridge server:**
    ```bash
-   python3 -m http.server 8080
-   # or with npm:
-   npx serve -l 8080 .
+   python3 touchdesigner/local_bridge_server.py
    ```
-2. Open `http://localhost:8080` in Chrome, Safari, or Edge.
-3. Tap **Begin Check-In** to step through the one-question-per-screen flow.
+   Serves static kiosk assets on `http://localhost:8080`, receives `/api/live-draft` updates, and saves completed submissions to `touchdesigner/records/`.
+
+2. Launch TouchDesigner:  
+    Open `touchdesigner/LAL_Constellate.toe`.  
+    Set the master mode toggle to Mode 0 (Local).  
+    TouchDesigner will read `live_draft.json` for live slider previews and monitor the records directory for finished submissions.
+
+### Mode 1: Cloud & Remote Testing (Cloudflare Pages + Supabase)  
+For remote client evaluation and testing without local Python servers:  
+
+1. Access the Cloudflare Pages Deployment:  
+    Open your deployed URL (e.g., `[https://lal-kiosk.pages.dev](https://lal-kiosk.pages.dev)`).  
+    
+2. TouchDesigner Cloud Sync:  
+    Open TouchDesigner and set the mode toggle to Mode 1 (Cloud).  
+    TouchDesigner polls Supabase (`public.reflections`) every 90 frames (~1.5s), rendering new submissions as remote users complete check-ins.
